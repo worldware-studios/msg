@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@types/typescript": "^0.4.29",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "messageformat": "4.0.0-10"
+  }
+}

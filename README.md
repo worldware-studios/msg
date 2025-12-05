@@ -1,2 +1,2 @@
 # msg
-Message Data Structures
+Messages
