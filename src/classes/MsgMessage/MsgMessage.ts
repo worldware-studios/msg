@@ -80,7 +80,6 @@ export class MsgMessage extends MsgAbstract {
   }
 
   public format(data: Record<string, any>, options?: MessageFormatOptions) {
-
     if (!this._mf) {
       this._mf = new MessageFormat(this.lang, this.value, options)
     }
@@ -103,8 +102,8 @@ export class MsgMessage extends MsgAbstract {
     const output = {
       key: this.key,
       value: this.value,
-      attributes: this._attributes,
-      notes: this._notes
+      attributes: this.attributes,
+      notes: this.notes
     }
 
     return JSON.stringify(output, null, 2);

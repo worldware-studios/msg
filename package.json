@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@types/typescript": "^0.4.29",
+    "@vitest/coverage-v8": "^4.0.15",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   },
@@ -8,6 +9,7 @@
     "messageformat": "4.0.0-10"
   },
   "scripts": {
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   }
 }
