@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest';
 import { MsgMessage } from './MsgMessage';
+import { DEFAULT_ATTRIBUTES, MsgAttributes } from '../MsgAbstract/MsgAbstract';
 
 test('Create with just key and value', () => {
   const msg1 = MsgMessage.create({
@@ -13,6 +14,12 @@ test('Create with just key and value', () => {
   expect(msg1.dir).toBe('');
   expect(msg1.dnt).toBe(false);
   expect(msg1.notes).toStrictEqual([]);
+
+  msg1.key = 'my-key-1';
+  msg1.value = 'My Value 1';
+
+  expect(msg1.key).toBe('my-key-1');
+  expect(msg1.value).toBe('My Value 1');
 });
 
 test('Create with full attributes', () => {
@@ -143,9 +150,69 @@ test('Test formatToParts', () => {
         "value": " files.",
       }
     ]
-  )
+  );
+});
 
+test('Test attributes', () => {
+  const msg = MsgMessage.create({
+    key: 'my-key',
+    value: 'My Value',
+    attributes: {
+      lang: 'en'
+    }
+  });
+
+  expect(msg.attributes).toBe(DEFAULT_ATTRIBUTES);
+
+  const altered: MsgAttributes = {
+    lang: 'fr'
+  }
+  msg.attributes = altered;
+
+  expect(msg.lang).toBe('fr');
+
+  msg.dnt = true;
+
+  expect(msg.dnt).toBe(true)
+
+  msg.lang = 'fr';
+
+  expect(msg.lang).toBe('fr');
+});
+
+test('Test generic functions', () => {
+  const msg = MsgMessage.create({
+    key: 'my-key',
+    value: 'My Value'
+  });
+
+  expect(msg.toString()).toBe('My Value')
+  expect(msg.toJSON()).toBe(
+`{
+  "key": "my-key",
+  "value": "My Value",
+  "attributes": {
+    "lang": "",
+    "dir": "",
+    "dnt": false
+  },
+  "notes": []
+}`)
 
 });
+
+test('Test key and value', () => {
+  const msg = MsgMessage.create({
+    key: 'my-key',
+    value: 'My Value'
+  });
+
+  msg.key = 'my-altered-key';
+  msg.value = 'My Altered Value';
+
+  expect(msg.key).toBe('my-altered-key');
+  expect(msg.value).toBe('My Altered Value');
+});
+
 
 
