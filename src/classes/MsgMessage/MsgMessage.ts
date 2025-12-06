@@ -1,7 +1,7 @@
 import { MessageFormat, type MessageFormatOptions } from "messageformat";
-import { MsgAbstract, type MsgAttributes, type MsgNote } from "../MsgAbstract/MsgAbstract";
+import { MsgInterface, type MsgAttributes, type MsgNote, textDirection } from "../MsgInterface";
 
-type MsgMessageData = {
+export type MsgMessageData = {
   key: string
   value: string
   attributes?: MsgAttributes;
@@ -9,52 +9,30 @@ type MsgMessageData = {
 }
 
 const DEFAULT_ATTRIBUTES: MsgAttributes = {
-  lang: '',
-  dir: '',
+  lang: "",
+  dir: "",
   dnt: false
 }
 
-export class MsgMessage extends MsgAbstract {
-  private _key: string
-  private _value: string
+export class MsgMessage implements MsgInterface {
+  private _key: string;
+  private _value: string;
   private _mf?: MessageFormat;
+  private _attributes: MsgAttributes = DEFAULT_ATTRIBUTES;
+  private _notes: MsgNote[] = [];
 
   private constructor(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]) {
-    super();
     this._key = key;
     this._value = value;
 
-    if (attributes) {
-      const { lang, dir, dnt } = attributes;
-      if (lang) {
-        this.lang = lang;
-      } else {
-        this.lang = DEFAULT_ATTRIBUTES.lang;
-      }
+    // merge in any attributes
+    this._attributes = attributes ? {...this._attributes, ...attributes} : this._attributes;
 
-      if (dir) {
-        this.dir = dir;
-      } else {
-        this.dir = DEFAULT_ATTRIBUTES.dir;
-      }
-
-      if (dnt) {
-        this.dnt = dnt;
-      } else {
-        this.dnt = DEFAULT_ATTRIBUTES.dnt;
-      }
-
-    } else {
-      this.lang = DEFAULT_ATTRIBUTES.lang;
-      this.dir = DEFAULT_ATTRIBUTES.dir;
-      this.dnt = DEFAULT_ATTRIBUTES.dnt;
-    }
-
+    // add any notes
     if (notes) {
-      notes.forEach(note => this.addNote(note))
-    } else {
-      this.notes = [];
+      notes.forEach(note => this.addNote(note));
     }
+
   }
 
   static create(data: MsgMessageData) {
@@ -79,6 +57,50 @@ export class MsgMessage extends MsgAbstract {
     this._value = value;
   }
 
+  public get attributes() {
+    return this._attributes;
+  }
+
+  public set attributes(attributes: MsgAttributes) {
+    this._attributes = attributes;
+  }
+
+  public get lang() {
+   return this._attributes['lang'];
+  }
+
+  public set lang(lang: string | undefined) {
+    this._attributes.lang = lang;
+  }
+
+  public get dir() {
+   return this._attributes['dir'];
+  }
+
+  public set dir(dir: textDirection | undefined) {
+    this._attributes.dir = dir;
+  }
+
+  public get dnt() {
+   return this._attributes['dnt'];
+  }
+
+  public set dnt(dnt: boolean | undefined) {
+    this._attributes.dnt = dnt;
+  }
+
+  public get notes() {
+    return this._notes;
+  }
+
+  public set notes(notes: MsgNote[]) {
+    this._notes = notes;
+  }
+
+  public addNote(note: MsgNote) {
+    this.notes.push(note);
+  }
+
   public format(data: Record<string, any>, options?: MessageFormatOptions) {
     if (!this._mf) {
       this._mf = new MessageFormat(this.lang, this.value, options)
@@ -93,20 +115,21 @@ export class MsgMessage extends MsgAbstract {
     return this._mf?.formatToParts(data);
   }
 
+  public getData(stripNotes: boolean = false) {
+    return {
+      key: this.key,
+      value: this.value,
+      attributes: this.attributes,
+      notes: !stripNotes && this.notes.length > 0 ? this.notes : undefined
+    }
+  }
+
   public toString() {
     return this.value;
   }
 
-  public toJSON() {
-
-    const output = {
-      key: this.key,
-      value: this.value,
-      attributes: this.attributes,
-      notes: this.notes
-    }
-
-    return JSON.stringify(output, null, 2);
+  public toJSON(stripNotes: boolean = false) {
+    return JSON.stringify(this.getData(stripNotes), null, 2);
   }
 
 }
