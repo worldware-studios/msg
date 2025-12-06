@@ -1,7 +1,6 @@
 import {type MsgMessageData, MsgMessage } from "../MsgMessage";
 import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgInterface, MsgNote } from "../MsgInterface";
 
-
 export type MsgResourceData = {
   title: string
   attributes: MsgAttributes
@@ -9,16 +8,19 @@ export type MsgResourceData = {
   messages?: MsgMessageData[]
 }
 
+export type LoaderFunction = (title: string, lang: string) => Promise<MsgResourceData>;
+
 export class MsgResource extends Map<string, MsgMessage> implements MsgInterface {
 
   private _attributes: MsgAttributes = DEFAULT_ATTRIBUTES;
   private _notes: MsgNote[] = [];
   private _title: string;
 
-  static create(data: MsgResourceData ) {
-    const { title, attributes, notes, messages}  = data;
+  private _load: LoaderFunction;
 
-    const res = new MsgResource(title, attributes, notes);
+  static create(data: MsgResourceData, loader: LoaderFunction ) {
+    const { title, attributes, notes, messages}  = data;
+    const res = new MsgResource(title, attributes, loader, notes);
 
     if (messages) {
       messages.forEach(messageData => {
@@ -32,11 +34,12 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     return res;
   }
 
-  private constructor (title: string, attributes: MsgAttributes, notes?: MsgNote[]) {
+  private constructor (title: string, attributes: MsgAttributes, loader: LoaderFunction, notes?: MsgNote[]) {
     super();
     this._title = title;
 
     this._attributes = {...this._attributes, ...attributes};
+    this._load = loader;
 
     if (notes) {
       notes.forEach(note => this.addNote(note));
@@ -64,7 +67,6 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     this.notes.push(note);
   }
 
-
   public get title() {
    return this._title;
   }
@@ -87,6 +89,10 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     return this;
   }
 
+  public async getTranslation(lang: string) {
+    return await this._load(this.title, lang).then((data) => this.translate(data));
+  }
+
   public translate(data: MsgResourceData) {
     const {title, attributes, messages} = data;
 
@@ -98,7 +104,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
       title,
       attributes,
       notes: this.notes, // transfer the notes
-    });
+    }, this._load);
 
     // use messages from the resource as defaults
     this.forEach(msg => {
@@ -111,7 +117,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
         key,
         value,
         attributes,
-      })
+      });
       msg.notes = this.get(key)?.notes || []; // transfer the notes
       translated.set(key, msg);
     })

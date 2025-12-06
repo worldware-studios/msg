@@ -1,5 +1,7 @@
 import { expect, test } from 'vitest';
 import { MsgResource, type MsgResourceData } from './MsgResource';
+import loader from '../../../res/l10n/translations';
+import * as translationData from '../../../res/l10n/translations/zh/TestResource.json'
 
 const testData: MsgResourceData = {
   title: 'TestResource',
@@ -36,29 +38,8 @@ const testData: MsgResourceData = {
   ]
 }
 
-console.log(JSON);
-
-const translationData: MsgResourceData = {
-  title: 'TestResource',
-  attributes: {
-    lang: 'zh',
-    dir: 'ltr',
-  },
-  messages: [
-    {
-      key: 'test-1',
-      value: '这是测试 1'
-    },
-    {
-      key: 'test-2',
-      value: '这是测试 2'
-    }
-  ]
-}
-
-
 test('MsgResource: "create" static method.', () => {
-  const res = MsgResource.create(testData);
+  const res = MsgResource.create(testData, loader);
 
   expect(res.title).toBe('TestResource');
   expect(res.attributes.lang).toBe('en');
@@ -81,7 +62,7 @@ test('MsgResource: "create" static method.', () => {
 });
 
 test('MsgResource: "add" public method.', () => {
-  const res = MsgResource.create(testData);
+  const res = MsgResource.create(testData, loader);
 
   res.add(
     'test-4',
@@ -101,7 +82,7 @@ test('MsgResource: "add" public method.', () => {
 });
 
 test('MsgResource: getters and setters', () => {
-  const res = MsgResource.create(testData);
+  const res = MsgResource.create(testData, loader);
   res.attributes = {
     dnt: true
   };
@@ -125,7 +106,7 @@ test('MsgResource: getters and setters', () => {
 })
 
 test('MsgResource: "translate" public method.', () => {
-  const res = MsgResource.create(testData);
+  const res = MsgResource.create(testData,loader);
   const translated = res.translate(translationData);
 
   expect(translated.attributes.lang).toBe('zh');
@@ -142,8 +123,14 @@ test('MsgResource: "translate" public method.', () => {
   expect(() => res.translate(data)).toThrow();
 });
 
+test('MsgResoure: "getTranslation" public method.', async () => {
+  const res = MsgResource.create(testData, loader);
+  const translated = await res.getTranslation('zh');
+  expect(translated.attributes.lang).toBe('zh');
+})
+
 test('MsgResource: "toJSON" public method', () => {
-  const res = MsgResource.create(testData);
+  const res = MsgResource.create(testData, loader);
   expect(res.toJSON()).toBe(JSON.stringify(res.getData(), null, 2));
 });
 

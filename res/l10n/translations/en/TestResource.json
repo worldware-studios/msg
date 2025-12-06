@@ -1,0 +1,17 @@
+{
+  "title": "TestResource",
+  "attributes": {
+    "lang": "en",
+    "dir": "ltr"
+  },
+  "messages": [
+    {
+      "key": "test-1",
+      "value": "This is test 1"
+    },
+    {
+      "key": "test-2",
+      "value": "This is test 2"
+    }
+  ]
+}
