@@ -1,5 +1,5 @@
 import { MessageFormat, type MessageFormatOptions } from "messageformat";
-import { MsgInterface, type MsgAttributes, type MsgNote, textDirection } from "../MsgInterface";
+import { MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface";
 
 export type MsgMessageData = {
   key: string
@@ -77,7 +77,7 @@ export class MsgMessage implements MsgInterface {
    return this._attributes['dir'];
   }
 
-  public set dir(dir: textDirection | undefined) {
+  public set dir(dir: string | undefined) {
     this._attributes.dir = dir;
   }
 

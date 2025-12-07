@@ -5,11 +5,9 @@ export type MsgNote = {
   content: string;
 }
 
-export type textDirection = 'ltr' | 'rtl' | '';
-
 export type MsgAttributes = {
   lang?: string
-  dir?: textDirection
+  dir?: string
   dnt?: boolean
 }
 
