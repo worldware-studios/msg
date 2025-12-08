@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest';
 import { MsgResource } from './MsgResource';
-import loader from '../../../res/l10n/translations';
+import project from '../../../res/l10n/projects/test';
 import { testData } from "../../test/test-data";
 
 test('MsgResource: "create" static method.', () => {
-  const res = MsgResource.create(testData, loader);
+  const res = MsgResource.create(testData, project);
 
   expect(res.title).toBe('TestResource');
   expect(res.attributes.lang).toBe('en');
@@ -27,7 +27,7 @@ test('MsgResource: "create" static method.', () => {
 });
 
 test('MsgResource: "add" public method.', () => {
-  const res = MsgResource.create(testData, loader);
+  const res = MsgResource.create(testData, project);
 
   res.add(
     'test-4',
@@ -47,7 +47,7 @@ test('MsgResource: "add" public method.', () => {
 });
 
 test('MsgResource: getters and setters', () => {
-  const res = MsgResource.create(testData, loader);
+  const res = MsgResource.create(testData, project);
   res.attributes = {
     dnt: true
   };
@@ -71,19 +71,19 @@ test('MsgResource: getters and setters', () => {
 })
 
 test('MsgResoure: "getTranslation" public method.', async () => {
-  const res = MsgResource.create(testData, loader);
+  const res = MsgResource.create(testData, project);
   const translated = await res.getTranslation('zh');
   expect(translated.attributes.lang).toBe('zh');
 });
 
 test('MsgResource: "getTranslation" exceptions', async () => {
-  const res = MsgResource.create(testData, loader);
+  const res = MsgResource.create(testData, project);
   expect((await res.getTranslation('zh')).title).toBe('TestResource');
   res.title = 'RenamedTitle';
   await expect(res.getTranslation('zh')).rejects.toThrow();
 });
 
 test('MsgResource: "toJSON" public method', () => {
-  const res = MsgResource.create(testData, loader);
+  const res = MsgResource.create(testData, project);
   expect(res.toJSON()).toBe(JSON.stringify(res.getData(), null, 2));
 });
