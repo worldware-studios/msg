@@ -1,5 +1,6 @@
 import {type MsgMessageData, MsgMessage } from "../MsgMessage";
 import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgInterface, MsgNote } from "../MsgInterface";
+import { MsgProject } from "../MsgProject";
 
 export type MsgResourceData = {
   title: string
@@ -8,15 +9,13 @@ export type MsgResourceData = {
   messages?: MsgMessageData[]
 }
 
-export type LoaderFunction = (title: string, lang: string) => Promise<MsgResourceData>;
-
 export class MsgResource extends Map<string, MsgMessage> implements MsgInterface {
 
   private _attributes: MsgAttributes = DEFAULT_ATTRIBUTES;
   private _notes: MsgNote[] = [];
   private _title: string;
 
-  private _load: LoaderFunction;
+  private _project: MsgProject;
 
   private translate(data: MsgResourceData) {
     const {title, attributes, messages} = data;
@@ -29,7 +28,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
       title,
       attributes,
       notes: this.notes, // transfer the notes
-    }, this._load);
+    }, this._project);
 
     // use messages from the resource as defaults
     this.forEach(msg => {
@@ -51,7 +50,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
   }
 
 
-  static create(data: MsgResourceData, loader: LoaderFunction ) {
+  static create(data: MsgResourceData, loader: MsgProject ) {
     const { title, attributes, notes, messages}  = data;
     const res = new MsgResource(title, attributes, loader, notes);
 
@@ -67,12 +66,12 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     return res;
   }
 
-  private constructor (title: string, attributes: MsgAttributes, loader: LoaderFunction, notes?: MsgNote[]) {
+  private constructor (title: string, attributes: MsgAttributes, project: MsgProject, notes?: MsgNote[]) {
     super();
     this._title = title;
 
     this._attributes = {...this._attributes, ...attributes};
-    this._load = loader;
+    this._project = project;
 
     if (notes) {
       notes.forEach(note => this.addNote(note));
@@ -123,7 +122,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
   }
 
   public async getTranslation(lang: string) {
-    return await this._load(this.title, lang).then((data) => this.translate(data));
+    return await this._project.loader(this._project.project.name, this.title, lang).then((data) => this.translate(data));
   }
 
   public getData(stripNotes: boolean = false): MsgResourceData {
