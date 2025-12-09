@@ -17,39 +17,6 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
   private _project: MsgProject;
 
-  private translate(data: MsgResourceData) {
-    const {title, attributes, messages} = data;
-
-    if (title !== this.title) {
-      throw new TypeError('Title of resource and translations do not match.');
-    }
-
-    const translated = MsgResource.create({
-      title,
-      attributes,
-      notes: this.notes, // transfer the notes
-    }, this._project);
-
-    // use messages from the resource as defaults
-    this.forEach(msg => {
-      translated.set(msg.key, msg);
-    })
-
-    messages?.forEach(messageData => {
-      const {key, value, attributes} = messageData;
-      const msg = MsgMessage.create({
-        key,
-        value,
-        attributes,
-      });
-      msg.notes = this.get(key)?.notes || []; // transfer the notes
-      translated.set(key, msg);
-    })
-
-    return translated;
-  }
-
-
   static create(data: MsgResourceData, loader: MsgProject ) {
     const { title, attributes, notes, messages}  = data;
     const res = new MsgResource(title, attributes, loader, notes);
@@ -119,6 +86,38 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     });
     this.set(key, msg);
     return this;
+  }
+
+  public translate(data: MsgResourceData) {
+    const {title, attributes, messages} = data;
+
+    if (title !== this.title) {
+      throw new TypeError('Title of resource and translations do not match.');
+    }
+
+    const translated = MsgResource.create({
+      title,
+      attributes,
+      notes: this.notes, // transfer the notes
+    }, this._project);
+
+    // use messages from the resource as defaults
+    this.forEach(msg => {
+      translated.set(msg.key, msg);
+    })
+
+    messages?.forEach(messageData => {
+      const {key, value, attributes} = messageData;
+      const msg = MsgMessage.create({
+        key,
+        value,
+        attributes,
+      });
+      msg.notes = this.get(key)?.notes || []; // transfer the notes
+      translated.set(key, msg);
+    })
+
+    return translated;
   }
 
   public async getTranslation(lang: string) {

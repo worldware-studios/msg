@@ -1,7 +1,10 @@
 import { expect, test } from 'vitest';
-import { MsgResource } from './MsgResource';
+import { MsgResource, MsgResourceData } from './MsgResource';
 import project from '../../../res/l10n/projects/test';
 import { testData } from "../../test/test-data";
+import * as zh from '../../../res/l10n/translations/test/zh/TestResource.json';
+
+const tData: MsgResourceData = zh;
 
 test('MsgResource: "create" static method.', () => {
   const res = MsgResource.create(testData, project);
@@ -68,19 +71,23 @@ test('MsgResource: getters and setters', () => {
   res.notes = [];
   expect(res.notes).toStrictEqual([]);
 
+});
+
+test('MsgResource: "translate" public method', async () => {
+  const res = MsgResource.create(testData, project);
+  const translated = res.translate(tData);
+  expect(translated.get('test-1')?.value).toBe('这是测试 1');
+  translated.title = 'ChangedTitle';
+  expect(res.translate(tData)).toThrow(TypeError);
+
 })
 
-test('MsgResoure: "getTranslation" public method.', async () => {
+test('MsgResource: "getTranslation" public method.', async () => {
   const res = MsgResource.create(testData, project);
   const translated = await res.getTranslation('zh');
   expect(translated.attributes.lang).toBe('zh');
-});
+  await expect(res.getTranslation('fr')).rejects.toThrow(Error);
 
-test('MsgResource: "getTranslation" exceptions', async () => {
-  const res = MsgResource.create(testData, project);
-  expect((await res.getTranslation('zh')).title).toBe('TestResource');
-  res.title = 'RenamedTitle';
-  await expect(res.getTranslation('zh')).rejects.toThrow();
 });
 
 test('MsgResource: "toJSON" public method', () => {
