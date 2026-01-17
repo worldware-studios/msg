@@ -113,7 +113,10 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
         value,
         attributes,
       });
-      msg.notes = this.get(key)?.notes || []; // transfer the notes
+      const notes = this.get(key)?.notes || []; // transfer the notes
+      notes.forEach(note => {
+        msg.addNote(note);
+      })
       translated.set(key, msg);
     })
 

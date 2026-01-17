@@ -14,12 +14,6 @@ test('Create with just key and value', () => {
   expect(msg1.dir).toBe('');
   expect(msg1.dnt).toBe(false);
   expect(msg1.notes).toStrictEqual([]);
-
-  msg1.key = 'my-key-1';
-  msg1.value = 'My Value 1';
-
-  expect(msg1.key).toBe('my-key-1');
-  expect(msg1.value).toBe('My Value 1');
 });
 
 test('Create with full attributes', () => {
@@ -39,10 +33,6 @@ test('Create with full attributes', () => {
   expect(msg2.dir).toBe('rtl');
   expect(msg2.dnt).toBe(false);
   expect(msg2.notes).toStrictEqual([]);
-
-  msg2.dir = 'ltr';
-  expect(msg2.dir).toBe('ltr');
-
 });
 
 test('Create with partial attributes', () => {
@@ -163,21 +153,6 @@ test('Test attributes', () => {
   });
 
   expect(msg5.attributes).toStrictEqual(DEFAULT_ATTRIBUTES);
-
-  const altered: MsgAttributes = {
-    lang: 'fr'
-  }
-  msg5.attributes = altered;
-
-  expect(msg5.lang).toBe('fr');
-
-  msg5.dnt = true;
-
-  expect(msg5.dnt).toBe(true)
-
-  msg5.lang = 'en';
-
-  expect(msg5.lang).toBe('en');
 });
 
 test('Test generic functions', () => {
@@ -200,18 +175,155 @@ test('Test generic functions', () => {
 
 });
 
-test('Test key and value', () => {
-  const msg7 = MsgMessage.create({
+test('MsgMessage: "addNote" public method', () => {
+  const msg = MsgMessage.create({
     key: 'my-key',
     value: 'My Value'
   });
-
-  msg7.key = 'my-altered-key';
-  msg7.value = 'My Altered Value';
-
-  expect(msg7.key).toBe('my-altered-key');
-  expect(msg7.value).toBe('My Altered Value');
+  
+  expect(msg.notes.length).toBe(0);
+  
+  msg.addNote({type: 'DESCRIPTION', content: 'First note'});
+  expect(msg.notes.length).toBe(1);
+  expect(msg.notes[0].type).toBe('DESCRIPTION');
+  expect(msg.notes[0].content).toBe('First note');
+  
+  msg.addNote({type: 'PARAMETERS', content: 'Second note'});
+  expect(msg.notes.length).toBe(2);
+  expect(msg.notes[1].type).toBe('PARAMETERS');
 });
 
+test('MsgMessage: "getData" public method', () => {
+  const msg = MsgMessage.create({
+    key: 'my-key',
+    value: 'My Value',
+    attributes: {
+      lang: 'en',
+      dir: 'ltr',
+      dnt: false
+    },
+    notes: [
+      {type: 'DESCRIPTION', content: 'Test note'}
+    ]
+  });
+  
+  const data = msg.getData();
+  
+  expect(data.key).toBe('my-key');
+  expect(data.value).toBe('My Value');
+  expect(data.attributes.lang).toBe('en');
+  expect(data.attributes.dir).toBe('ltr');
+  expect(data.attributes.dnt).toBe(false);
+  expect(data.notes).toStrictEqual([{type: 'DESCRIPTION', content: 'Test note'}]);
+});
 
+test('MsgMessage: "getData" with stripNotes: true', () => {
+  const msg = MsgMessage.create({
+    key: 'my-key',
+    value: 'My Value',
+    notes: [
+      {type: 'DESCRIPTION', content: 'Test note'}
+    ]
+  });
+  
+  const data = msg.getData(true);
+  
+  expect(data.key).toBe('my-key');
+  expect(data.value).toBe('My Value');
+  expect(data.notes).toBeUndefined();
+});
+
+test('MsgMessage: "getData" with empty notes', () => {
+  const msg = MsgMessage.create({
+    key: 'my-key',
+    value: 'My Value'
+  });
+  
+  const data = msg.getData();
+  
+  // When notes array is empty, notes should be undefined
+  expect(data.notes).toBeUndefined();
+});
+
+test('MsgMessage: "toJSON" with stripNotes: true', () => {
+  const msg = MsgMessage.create({
+    key: 'my-key',
+    value: 'My Value',
+    notes: [
+      {type: 'DESCRIPTION', content: 'Test note'}
+    ]
+  });
+  
+  const json = msg.toJSON(true);
+  const parsed = JSON.parse(json);
+  
+  expect(parsed.key).toBe('my-key');
+  expect(parsed.value).toBe('My Value');
+  expect(parsed.notes).toBeUndefined();
+});
+
+test('MsgMessage: "format" with options parameter', () => {
+  const msg = MsgMessage.create({
+    key: 'test-key',
+    value: 'Hello {$name}',
+    attributes: {
+      lang: 'en'
+    }
+  });
+  
+  // Test format with options - MessageFormat may add bidirectional isolation characters
+  const result = msg.format({name: 'World'}, {});
+  // The result should contain "Hello" and "World" (may have isolation characters)
+  expect(result).toContain('Hello');
+  expect(result).toContain('World');
+  expect(typeof result).toBe('string');
+});
+
+test('MsgMessage: "formatToParts" with options parameter', () => {
+  const msg = MsgMessage.create({
+    key: 'test-key',
+    value: 'Hello {$name}',
+    attributes: {
+      lang: 'en',
+      dir: 'ltr'
+    }
+  });
+  
+  // Test formatToParts with options
+  const parts = msg.formatToParts({name: 'World'}, {});
+  expect(parts.length).toBeGreaterThan(0);
+  expect(parts.some(part => part.type === 'text' && part.value === 'Hello ')).toBe(true);
+});
+
+test('MsgMessage: empty value string', () => {
+  const msg = MsgMessage.create({
+    key: 'empty-key',
+    value: ''
+  });
+  
+  expect(msg.value).toBe('');
+  expect(msg.toString()).toBe('');
+  expect(msg.format({})).toBe('');
+});
+
+test('MsgMessage: "getData" returns correct structure', () => {
+  const msg = MsgMessage.create({
+    key: 'test-key',
+    value: 'Test Value',
+    attributes: {
+      lang: 'fr',
+      dir: 'ltr',
+      dnt: true
+    }
+  });
+  
+  const data = msg.getData();
+  
+  expect(data).toHaveProperty('key');
+  expect(data).toHaveProperty('value');
+  expect(data).toHaveProperty('attributes');
+  expect(data.attributes).toHaveProperty('lang');
+  expect(data.attributes).toHaveProperty('dir');
+  expect(data.attributes).toHaveProperty('dnt');
+});
 

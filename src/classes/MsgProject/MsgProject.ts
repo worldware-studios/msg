@@ -2,19 +2,19 @@ import { type MsgResourceData } from "../MsgResource";
 
 type MsgProjectSettings = {
   name: string
-  version: number
+  version?: number
 };
 
 type MsgLocalesSettings = {
   sourceLocale: string
   pseudoLocale?: string
-  targetLocales: string[]
+  targetLocales?: string[]
 };
 
 type MsgPathsSettings = {
-  srcPaths: string[]
-  exportsPath: string
-  importPath: string
+  srcPaths?: string[]
+  exportsPath?: string
+  importPath?: string
 };
 
 export type MsgTranslationLoader = (project: string, title: string, lang: string) => Promise<MsgResourceData>;
