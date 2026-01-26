@@ -1,4 +1,13 @@
 {
+  "name": "@worldware/msg",
+  "version": "0.0.1",
+  "description": "Message localization tooling",
+  "main": "dist/index.js",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@types/typescript": "^0.4.29",
     "@vitest/coverage-v8": "^4.0.15",
