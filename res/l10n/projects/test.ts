@@ -12,7 +12,7 @@ export default MsgProject.create({
     pseudoLocale: 'zxx'
   },
   paths: {
-    srcPaths: ['../../../../src'],
+    srcPaths: ['../../../src'],
     exportsPath: '../xliff/exports',
     importPath: '../xliff/imports'
   },
@@ -21,4 +21,4 @@ export default MsgProject.create({
     const data: MsgResourceData = await import(path);
     return data;
   }
-})
+});
