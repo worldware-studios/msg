@@ -17,9 +17,9 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
   private _project: MsgProject;
 
-  static create(data: MsgResourceData, loader: MsgProject ) {
+  static create(data: MsgResourceData, project: MsgProject ) {
     const { title, attributes, notes, messages}  = data;
-    const res = new MsgResource(title, attributes, loader, notes);
+    const res = new MsgResource(title, attributes, project, notes);
 
     if (messages) {
       messages.forEach(messageData => {
