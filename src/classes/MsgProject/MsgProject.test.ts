@@ -2,7 +2,7 @@ import { MsgProject } from './MsgProject';
 import { testProjectData } from '../../test/test-project-data';
 import { test, expect, describe } from 'vitest';
 
-describe('MsgMessage tests', () => {
+describe('MsgProject tests', () => {
 
   test('MsgProject: "create" static method', () => {
     const project = MsgProject.create(testProjectData);

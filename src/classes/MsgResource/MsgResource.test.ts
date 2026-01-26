@@ -6,7 +6,7 @@ import * as zh from '../../../res/l10n/translations/test/zh/TestResource.json';
 
 const tData: MsgResourceData = zh;
 
-describe('MsgMessage tests', () => {
+describe('MsgResource tests', () => {
 
   test('MsgResource: "create" static method.', () => {
     const res = MsgResource.create(testData, project);
