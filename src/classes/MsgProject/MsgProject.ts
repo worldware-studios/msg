@@ -5,10 +5,14 @@ type MsgProjectSettings = {
   version?: number
 };
 
+type MsgTargetLocalesSettings = {
+  [key: string]: string[]
+}
+
 type MsgLocalesSettings = {
   sourceLocale: string
-  pseudoLocale?: string
-  targetLocales?: string[]
+  pseudoLocale: string
+  targetLocales: MsgTargetLocalesSettings
 };
 
 export type MsgTranslationLoader = (project: string, title: string, lang: string) => Promise<MsgResourceData>;
@@ -25,9 +29,11 @@ const defaultProjectSettings: MsgProjectSettings = {
 };
 
 const defaultLocalesSettings: MsgLocalesSettings = {
-  sourceLocale: '',
+  sourceLocale: 'en',
   pseudoLocale: 'en-XA',
-  targetLocales: ['']
+  targetLocales: {
+    en: ['en']
+  }
 };
 
 export class MsgProject {
@@ -61,4 +67,9 @@ export class MsgProject {
   public get loader() {
     return this._loader;
   }
+
+  public getTargetLocale(locale: string): string[] | undefined {
+    return this._locales.targetLocales[locale];
+  }
+
 }

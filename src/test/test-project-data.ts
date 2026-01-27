@@ -7,12 +7,10 @@ export const testProjectData: MsgProjectData = {
   },
   locales: {
     sourceLocale: 'en',
-    targetLocales: ['en', 'zh'],
-  },
-  paths: {
-    srcPaths: ['./src'],
-    exportsPath: './res/l10n/xliff/exports',
-    importPath: './res/l10n/xliff/imports'
+    targetLocales: {
+      en: ['en'],
+      zh: ['zh']
+    },
   },
   loader: async (project, title, lang) => {
     const path = `../../res/l10n/translations/${project}/${lang}/${title}.json`;
