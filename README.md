@@ -10,7 +10,7 @@ A TypeScript library for managing internationalization (i18n) messages with supp
 - **Translation Loading**: Load translations from external sources via customizable loaders
 - **Message Formatting**: Format messages with parameters using MessageFormat 2 (MF2) syntax
 - **Attributes & Notes**: Attach metadata (language, direction, do-not-translate flags) and notes to messages
-- **Project Configuration**: Configure projects with locale settings, paths, and translation loaders
+- **Project Configuration**: Configure projects with locale settings and translation loaders
 
 ## Installation
 
@@ -24,8 +24,7 @@ npm install @worldware/msg
 
 A project configuration that defines:
 - Project name and version
-- Source and target locales
-- File paths for resources and translations
+- Source and target locales (with language fallback chains)
 - A translation loader function
 
 ### MsgResource
@@ -50,7 +49,7 @@ An individual message with:
 ### Basic Setup
 
 ```typescript
-import { MsgProject, MsgResource } from '@msg';
+import { MsgProject, MsgResource } from '@worldware/msg';
 
 // Create a project configuration
 const project = MsgProject.create({
@@ -60,13 +59,13 @@ const project = MsgProject.create({
   },
   locales: {
     sourceLocale: 'en',
-    targetLocales: ['en', 'es', 'fr'],
-    pseudoLocale: 'zxx'
-  },
-  paths: {
-    srcPaths: ['./src'],
-    exportsPath: './xliff/exports',
-    importPath: './xliff/imports'
+    pseudoLocale: 'en-XA',
+    targetLocales: {
+      'en': ['en'],
+      'es': ['es'],
+      'fr': ['fr'],
+      'fr-CA': ['fr', 'fr-CA']  // Falls back to 'fr' if 'fr-CA' not available
+    }
   },
   loader: async (project, title, lang) => {
     // Custom loader to fetch translation data
@@ -173,8 +172,10 @@ const data = resource.getData();
 **Properties:**
 - `project: MsgProjectSettings` - Project name and version
 - `locales: MsgLocalesSettings` - Locale configuration
-- `paths: MsgPathsSettings` - File path configuration
 - `loader: MsgTranslationLoader` - Translation loader function
+
+**Methods:**
+- `getTargetLocale(locale: string): string[] | undefined` - Returns the language fallback chain (array of locale codes) for the specified locale, or `undefined` if the locale is not configured in `targetLocales`
 
 ### MsgResource
 
