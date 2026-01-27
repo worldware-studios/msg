@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { MsgMessage } from './MsgMessage';
-import { DEFAULT_ATTRIBUTES, MsgAttributes } from '../MsgInterface';
+import { MsgMessage } from '../classes/MsgMessage/MsgMessage.js';
+import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgNote } from '../classes/MsgInterface/MsgInterface.js';
 
 
 describe('MsgMessage tests', () => {
@@ -329,5 +329,67 @@ describe('MsgMessage tests', () => {
     expect(data.attributes).toHaveProperty('lang');
     expect(data.attributes).toHaveProperty('dir');
     expect(data.attributes).toHaveProperty('dnt');
+  });
+
+  test('MsgMessage: create without notes then add notes (mirrors MsgResource.translate pattern)', () => {
+    // This test mirrors the pattern used in MsgResource.translate():
+    // Create message with attributes but no notes, then add notes via addNote()
+    const msg = MsgMessage.create({
+      key: 'translated-key',
+      value: 'Translated Value',
+      attributes: {
+        lang: 'zh',
+        dir: 'ltr'
+      }
+    });
+    
+    expect(msg.notes.length).toBe(0);
+    
+    // Simulate transferring notes from original message (as in MsgResource.translate)
+    const originalNotes: MsgNote[] = [
+      {type: 'DESCRIPTION', content: 'Original description'},
+      {type: 'PARAMETERS', content: 'Original parameters'}
+    ];
+    
+    originalNotes.forEach(note => {
+      msg.addNote(note);
+    });
+    
+    expect(msg.notes.length).toBe(2);
+    expect(msg.notes[0]).toStrictEqual({type: 'DESCRIPTION', content: 'Original description'});
+    expect(msg.notes[1]).toStrictEqual({type: 'PARAMETERS', content: 'Original parameters'});
+    expect(msg.key).toBe('translated-key');
+    expect(msg.value).toBe('Translated Value');
+    expect(msg.lang).toBe('zh');
+  });
+
+  test('MsgMessage: create with merged attributes (mirrors MsgResource.add pattern)', () => {
+    // This test mirrors the pattern used in MsgResource.add():
+    // Attributes are merged (resource attributes + message-specific attributes)
+    const defaultAttributes = {
+      lang: 'en',
+      dir: 'ltr',
+      dnt: false
+    };
+    
+    const messageAttributes = {
+      dnt: true  // Override dnt, keep lang and dir from defaults
+    };
+    
+    const merged = {...defaultAttributes, ...messageAttributes};
+    
+    const msg = MsgMessage.create({
+      key: 'test-key',
+      value: 'Test Value',
+      attributes: merged,
+      notes: [
+        {type: 'DESCRIPTION', content: 'Test note'}
+      ]
+    });
+    
+    expect(msg.attributes.lang).toBe('en');
+    expect(msg.attributes.dir).toBe('ltr');
+    expect(msg.attributes.dnt).toBe(true);  // Overridden value
+    expect(msg.notes.length).toBe(1);
   })
 });

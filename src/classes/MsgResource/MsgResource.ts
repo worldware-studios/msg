@@ -1,6 +1,6 @@
-import {type MsgMessageData, MsgMessage } from "../MsgMessage/index.js";
-import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgInterface, MsgNote } from "../MsgInterface/index.js";
-import { MsgProject } from "../MsgProject/index.js";
+import {type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
+import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgInterface, MsgNote } from "../MsgInterface/MsgInterface.js";
+import { MsgProject } from "../MsgProject/MsgProject.js";
 
 export type MsgResourceData = {
   title: string
@@ -124,7 +124,29 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
   }
 
   public async getTranslation(lang: string) {
-    return await this._project.loader(this._project.project.name, this.title, lang).then((data) => this.translate(data));
+
+    const project = this._project;
+    const languageChain = project.getTargetLocale(lang);
+
+    if(!languageChain) {
+      throw new Error("Unsupported locale for resource.");
+    }
+
+    if(languageChain.length == 0) {
+      throw new Error(`Empty language chain for locale: ${lang}`)
+    }
+
+    let translated: MsgResource = this;
+
+    for (let i = 0; i < languageChain.length; i++) {
+      const lang = languageChain[i];
+      if (lang && project._locales.targetLocales[lang]) {
+        translated = await translated._project._loader(project.project.name, translated.title, lang) 
+                              .then(data => translated.translate(data))       
+      }
+    }
+
+    return translated;
   }
 
   public getData(stripNotes: boolean = false): MsgResourceData {

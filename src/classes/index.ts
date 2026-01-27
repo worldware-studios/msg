@@ -1,3 +1,3 @@
-export * from './MsgMessage/index.js';
-export * from './MsgResource/index.js';
-export * from './MsgProject/index.js';
+export * from './MsgMessage/MsgMessage.js';
+export * from './MsgResource/MsgResource.js';
+export * from './MsgProject/MsgProject.js';

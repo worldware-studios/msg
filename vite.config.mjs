@@ -1,8 +1,11 @@
-import { defineConfig, mergeConfig } from 'vitest/config'
-import viteConfig from './vite.config.mjs'
+import { defineConfig } from 'vitest/config'
 
-export default mergeConfig(viteConfig, defineConfig({
+export default defineConfig({
   test: {
-    // ...
+    coverage: {
+      exclude: [
+        '**/*.json'
+      ]
+    }
   },
-}))
+})

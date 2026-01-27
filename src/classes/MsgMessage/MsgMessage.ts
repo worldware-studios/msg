@@ -1,5 +1,5 @@
 import { MessageFormat, type MessageFormatOptions } from "messageformat";
-import { MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface/index.js";
+import { MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
 
 export type MsgMessageData = {
   key: string
