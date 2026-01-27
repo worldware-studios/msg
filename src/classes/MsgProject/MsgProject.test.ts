@@ -12,11 +12,7 @@ describe('MsgProject tests', () => {
 
     expect(project.locales.sourceLocale).toBe('en');
     expect(project.locales.targetLocales).toStrictEqual(['en', 'zh']);
-    expect(project.locales.pseudoLocale).toBe('zxx');
-
-    expect(project.paths.srcPaths).toStrictEqual(['./src']);
-    expect(project.paths.exportsPath).toStrictEqual('./res/l10n/xliff/exports');
-    expect(project.paths.importPath).toStrictEqual('./res/l10n/xliff/imports');
+    expect(project.locales.pseudoLocale).toBe('en-XA');
 
     expect(project.loader).toBeInstanceOf(Function);
 
@@ -50,13 +46,9 @@ describe('MsgProject tests', () => {
     
     // Locales defaults
     expect(project.locales.sourceLocale).toBe('en');
-    expect(project.locales.pseudoLocale).toBe('zxx'); // default
+    expect(project.locales.pseudoLocale).toBe('en-XA'); // default
     expect(project.locales.targetLocales).toStrictEqual(['']); // default
     
-    // Paths defaults
-    expect(project.paths.srcPaths).toStrictEqual(['./src']);
-    expect(project.paths.exportsPath).toBe('../xliff/exports'); // default
-    expect(project.paths.importPath).toBe('../xliff/imports'); // default
   });
 
   test('MsgProject: getters return correct values', () => {
@@ -74,16 +66,8 @@ describe('MsgProject tests', () => {
     expect(project.locales).toHaveProperty('pseudoLocale');
     expect(project.locales.sourceLocale).toBe('en');
     expect(project.locales.targetLocales).toStrictEqual(['en', 'zh']);
-    expect(project.locales.pseudoLocale).toBe('zxx');
-    
-    // Test paths getter
-    expect(project.paths).toHaveProperty('srcPaths');
-    expect(project.paths).toHaveProperty('exportsPath');
-    expect(project.paths).toHaveProperty('importPath');
-    expect(project.paths.srcPaths).toStrictEqual(['./src']);
-    expect(project.paths.exportsPath).toBe('./res/l10n/xliff/exports');
-    expect(project.paths.importPath).toBe('./res/l10n/xliff/imports');
-    
+    expect(project.locales.pseudoLocale).toBe('en-XA');
+        
     // Test loader getter
     expect(project.loader).toBeInstanceOf(Function);
     expect(typeof project.loader).toBe('function');
@@ -113,11 +97,8 @@ describe('MsgProject tests', () => {
     expect(project.project.version).toBe(2);
     expect(project.locales.sourceLocale).toBe('fr');
     expect(project.locales.targetLocales).toStrictEqual(['fr', 'es']);
-    expect(project.paths.srcPaths).toStrictEqual(['./custom']);
-    expect(project.paths.exportsPath).toBe('./custom/exports');
-    
+
     // Defaults should still apply where not overridden
-    expect(project.locales.pseudoLocale).toBe('zxx'); // default
-    expect(project.paths.importPath).toBe('../xliff/imports'); // default
+    expect(project.locales.pseudoLocale).toBe('en-XA'); // default
   })
 });

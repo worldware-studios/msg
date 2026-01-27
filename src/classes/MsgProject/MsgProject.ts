@@ -11,18 +11,11 @@ type MsgLocalesSettings = {
   targetLocales?: string[]
 };
 
-type MsgPathsSettings = {
-  srcPaths?: string[]
-  exportsPath?: string
-  importPath?: string
-};
-
 export type MsgTranslationLoader = (project: string, title: string, lang: string) => Promise<MsgResourceData>;
 
 export type MsgProjectData = {
   project: MsgProjectSettings
   locales: MsgLocalesSettings
-  paths: MsgPathsSettings
   loader: MsgTranslationLoader
 };
 
@@ -33,36 +26,27 @@ const defaultProjectSettings: MsgProjectSettings = {
 
 const defaultLocalesSettings: MsgLocalesSettings = {
   sourceLocale: '',
-  pseudoLocale: 'zxx',
+  pseudoLocale: 'en-XA',
   targetLocales: ['']
-};
-
-const defaultPathsSettings: MsgPathsSettings = {
-  srcPaths: ['../../../src'],
-  exportsPath: '../xliff/exports',
-  importPath: '../xliff/imports'
 };
 
 export class MsgProject {
   _project: MsgProjectSettings;
   _locales: MsgLocalesSettings;
-  _paths: MsgPathsSettings;
   _loader: MsgTranslationLoader;
 
   static create(data: MsgProjectData) {
-    const { project, locales, paths, loader } = data;
-    return new MsgProject(project, locales, paths, loader);
+    const { project, locales, loader } = data;
+    return new MsgProject(project, locales, loader);
   }
 
   private constructor(
     projectSettings: MsgProjectSettings,
     localesSettings: MsgLocalesSettings,
-    pathsSettings: MsgPathsSettings,
     loader: MsgTranslationLoader
   ) {
     this._project = {...defaultProjectSettings, ...projectSettings};
     this._locales = {...defaultLocalesSettings, ...localesSettings};
-    this._paths = {...defaultPathsSettings, ...pathsSettings};
     this._loader = loader;
   }
 
@@ -72,10 +56,6 @@ export class MsgProject {
 
   public get locales() {
     return this._locales;
-  }
-
-  public get paths() {
-    return this._paths;
   }
 
   public get loader() {
