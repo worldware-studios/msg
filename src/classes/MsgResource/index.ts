@@ -1,1 +1,1 @@
-export * from './MsgResource';
+export * from './MsgResource.js';

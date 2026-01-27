@@ -1,1 +1,1 @@
-export * from './MsgInterface';
+export * from './MsgInterface.js';

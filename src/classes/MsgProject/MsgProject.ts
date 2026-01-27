@@ -1,4 +1,4 @@
-import { type MsgResourceData } from "../MsgResource";
+import { type MsgResourceData } from "../MsgResource/index.js";
 
 type MsgProjectSettings = {
   name: string
