@@ -1,1 +1,1 @@
-export * from './MsgProject';
+export * from './MsgProject.js';

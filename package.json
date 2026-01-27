@@ -1,6 +1,6 @@
 {
   "name": "@worldware/msg",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Message localization tooling",
   "main": "dist/index.js",
   "type": "module",
