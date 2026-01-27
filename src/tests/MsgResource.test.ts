@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { MsgResource, MsgResourceData } from '../classes/MsgResource/MsgResource.js';
 import { MsgProject, MsgProjectData } from '../classes/MsgProject/MsgProject.js';
-import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgNote } from '../classes/MsgInterface/index.js';
+import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgNote } from '../classes/MsgInterface/MsgInterface.js';
 
 const testProjectData: MsgProjectData = {
   project: {

@@ -1,6 +1,6 @@
-import {type MsgMessageData, MsgMessage } from "../MsgMessage/index.js";
-import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgInterface, MsgNote } from "../MsgInterface/index.js";
-import { MsgProject } from "../MsgProject/index.js";
+import {type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
+import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgInterface, MsgNote } from "../MsgInterface/MsgInterface.js";
+import { MsgProject } from "../MsgProject/MsgProject.js";
 
 export type MsgResourceData = {
   title: string

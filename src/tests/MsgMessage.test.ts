@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { MsgMessage } from '../classes/MsgMessage';
-import { DEFAULT_ATTRIBUTES, MsgAttributes } from '../classes/MsgInterface';
+import { MsgMessage } from '../classes/MsgMessage/MsgMessage.js';
+import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgNote } from '../classes/MsgInterface/MsgInterface.js';
 
 
 describe('MsgMessage tests', () => {
@@ -346,7 +346,7 @@ describe('MsgMessage tests', () => {
     expect(msg.notes.length).toBe(0);
     
     // Simulate transferring notes from original message (as in MsgResource.translate)
-    const originalNotes = [
+    const originalNotes: MsgNote[] = [
       {type: 'DESCRIPTION', content: 'Original description'},
       {type: 'PARAMETERS', content: 'Original parameters'}
     ];
