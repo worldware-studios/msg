@@ -1,0 +1,21 @@
+{
+  "title": "TestResource",
+  "attributes": {
+    "lang": "zh",
+    "dir": "ltr"
+  },
+  "messages": [
+    {
+      "key": "test-1",
+      "value": "這是測試 1"
+    },
+    {
+      "key": "test-2",
+      "value": "這是測試 2"
+    },
+    {
+      "key": "test-3",
+      "value": "這是測試 3"
+    }
+  ]
+}

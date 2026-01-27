@@ -1,6 +1,28 @@
-import { MsgProject, MsgProjectData } from './MsgProject';
-import { testProjectData } from '../../test/test-project-data';
+import { MsgProject, MsgProjectData } from '../classes/MsgProject/MsgProject.js';
+import { MsgResourceData } from '../classes/MsgResource/MsgResource.js';
 import { test, expect, describe } from 'vitest';
+
+const testProjectData: MsgProjectData = {
+  project: {
+    name: 'test2',
+    version: 1
+  },
+  locales: {
+    sourceLocale: 'en',
+    pseudoLocale: 'en-XA',
+    targetLocales: {
+      en: ['en'],
+      zh: ['zh'],
+      'zh-Hant': ['zh', 'zh-Hant'],
+      'zh-HK': ['zh', 'zh-Hant', 'zh-HK']
+    },
+  },
+  loader: async (project: string, title: string, lang: string) => {
+    const path = `../../../res/l10n/translations/${project}/${lang}/${title}.json`;
+    const data: MsgResourceData = await import(path);
+    return data;
+  }
+}
 
 describe('MsgProject tests', () => {
 
