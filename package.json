@@ -1,15 +1,15 @@
 {
   "name": "@worldware/msg",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Message localization tooling",
   "license": "MIT",
   "author": "Joel Sahleen",
   "repository": {
     "type": "git",
-    "url": "https://github.com/worldware/msg"
+    "url": "https://github.com/worldware-studios/msg"
   },
   "bugs": {
-    "url": "https://github.com/worldware/msg/issues"
+    "url": "https://github.com/worldware-studios/msg/issues"
   },
   "main": "dist/index.js",
   "type": "module",
