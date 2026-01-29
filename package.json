@@ -27,7 +27,7 @@
     "messageformat": "4.0.0-10"
   },
   "scripts": {
-    "build": "npm test && tsc",
+    "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage"

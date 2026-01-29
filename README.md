@@ -4,7 +4,7 @@ A TypeScript library for managing internationalization (i18n) messages with supp
 
 ## Overview
 
-`msg` provides a structured approach to managing translatable messages in your application. It integrates with [MessageFormat 2](https://messageformat.github.io/messageformat/) (MF2) for advanced message formatting and supports:
+`msg` provides a structured approach to managing translatable messages in your application. It integrates with [MessageFormat 2](https://messageformat.unicode.org/) (MF2) for advanced message formatting and supports:
 
 - **Message Management**: Organize messages into resources with keys and values
 - **Translation Loading**: Load translations from external sources via customizable loaders
