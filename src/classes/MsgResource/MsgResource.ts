@@ -74,6 +74,10 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     this._title = title;
   }
 
+  public getProject(): MsgProject {
+    return this._project;
+  }
+
   public add(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]) {
 
     const merged = {...this.attributes, ...attributes};

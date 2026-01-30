@@ -186,6 +186,7 @@ const data = resource.getData();
 - `add(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]): MsgResource` - Add a message
 - `translate(data: MsgResourceData): MsgResource` - Create a translated version
 - `getTranslation(lang: string): Promise<MsgResource>` - Load and apply translations
+- `getProject(): MsgProject` - Returns the project instance associated with the resource
 - `getData(stripNotes?: boolean): MsgResourceData` - Get resource data
 - `toJSON(stripNotes?: boolean): string` - Serialize to JSON
 
