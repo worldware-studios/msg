@@ -165,6 +165,16 @@ describe('MsgResource tests', () => {
     expect(resource.title).toBe('NewTitle');
   });
 
+  test('MsgResource: getProject returns the project', () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: DEFAULT_ATTRIBUTES
+    }, project);
+
+    expect(resource.getProject()).toBe(project);
+  });
+
   test('MsgResource: attributes getter and setter', () => {
     const project = MsgProject.create(testProjectData);
     const resource = MsgResource.create({
