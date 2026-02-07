@@ -145,9 +145,9 @@ resource.add('complex-message', 'This is a complex message', {
 
 // Access attributes
 const message = resource.get('complex-message');
-console.log(message?.lang); // 'en'
-console.log(message?.dir);  // 'ltr'
-console.log(message?.dnt);  // false
+console.log(message?.attributes.lang); // 'en'
+console.log(message?.attributes.dir);  // 'ltr'
+console.log(message?.attributes.dnt);  // false
 ```
 
 ### Serialization
@@ -210,10 +210,7 @@ const data = resource.getData();
 **Properties:**
 - `key: string` - Message key
 - `value: string` - Message value
-- `attributes: MsgAttributes` - Message attributes
-- `lang: string` - Language code
-- `dir: string` - Text direction
-- `dnt: boolean` - Do-not-translate flag
+- `attributes: MsgAttributes` - Message attributes (lang, dir, dnt)
 - `notes: MsgNote[]` - Message notes
 
 ## Development

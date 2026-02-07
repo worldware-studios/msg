@@ -13,9 +13,9 @@ describe('MsgMessage tests', () => {
 
     expect(msg1.key).toBe('my-key');
     expect(msg1.value).toBe('My Value');
-    expect(msg1.lang).toBe('');
-    expect(msg1.dir).toBe('');
-    expect(msg1.dnt).toBe(false);
+    expect(msg1.attributes.lang).toBe('');
+    expect(msg1.attributes.dir).toBe('');
+    expect(msg1.attributes.dnt).toBe(false);
     expect(msg1.notes).toStrictEqual([]);
   });
 
@@ -32,9 +32,9 @@ describe('MsgMessage tests', () => {
 
     expect(msg2.key).toBe('my-key');
     expect(msg2.value).toBe('My Value');
-    expect(msg2.lang).toBe('ar');
-    expect(msg2.dir).toBe('rtl');
-    expect(msg2.dnt).toBe(false);
+    expect(msg2.attributes.lang).toBe('ar');
+    expect(msg2.attributes.dir).toBe('rtl');
+    expect(msg2.attributes.dnt).toBe(false);
     expect(msg2.notes).toStrictEqual([]);
   });
 
@@ -49,9 +49,9 @@ describe('MsgMessage tests', () => {
 
     expect(msg3.key).toBe('my-key');
     expect(msg3.value).toBe('My Value');
-    expect(msg3.lang).toBe('fr');
-    expect(msg3.dir).toBe('');
-    expect(msg3.dnt).toBe(false);
+    expect(msg3.attributes.lang).toBe('fr');
+    expect(msg3.attributes.dir).toBe('');
+    expect(msg3.attributes.dnt).toBe(false);
     expect(msg3.notes).toStrictEqual([]);
 
   });
@@ -67,9 +67,9 @@ describe('MsgMessage tests', () => {
 
     expect(msg4.key).toBe('my-key');
     expect(msg4.value).toBe('My Value');
-    expect(msg4.lang).toBe('');
-    expect(msg4.dir).toBe('');
-    expect(msg4.dnt).toBe(false);
+    expect(msg4.attributes.lang).toBe('');
+    expect(msg4.attributes.dir).toBe('');
+    expect(msg4.attributes.dnt).toBe(false);
     expect(msg4.notes).toStrictEqual([{type: 'DESCRIPTION', content: 'This is a test description'}]);
     expect(msg4.notes.length).toBe(1);
 
@@ -360,7 +360,7 @@ describe('MsgMessage tests', () => {
     expect(msg.notes[1]).toStrictEqual({type: 'PARAMETERS', content: 'Original parameters'});
     expect(msg.key).toBe('translated-key');
     expect(msg.value).toBe('Translated Value');
-    expect(msg.lang).toBe('zh');
+    expect(msg.attributes.lang).toBe('zh');
   });
 
   test('MsgMessage: create with merged attributes (mirrors MsgResource.add pattern)', () => {
