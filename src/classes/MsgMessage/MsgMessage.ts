@@ -53,18 +53,6 @@ export class MsgMessage implements MsgInterface {
     return this._attributes;
   }
 
-  public get lang() {
-   return this._attributes['lang'];
-  }
-
-  public get dir() {
-   return this._attributes['dir'];
-  }
-
-  public get dnt() {
-   return this._attributes['dnt'];
-  }
-
   public get notes() {
     return this._notes;
   }
@@ -75,14 +63,14 @@ export class MsgMessage implements MsgInterface {
 
   public format(data: Record<string, any>, options?: MessageFormatOptions) {
     if (!this._mf) {
-      this._mf = new MessageFormat(this.lang, this.value, options)
+      this._mf = new MessageFormat(this.attributes.lang, this.value, options)
     }
     return this._mf.format(data);
   }
 
   public formatToParts(data: Record<string, any>, options?: MessageFormatOptions) {
     if (!this._mf) {
-      this._mf = new MessageFormat(this.lang, this.value, options)
+      this._mf = new MessageFormat(this.attributes.lang, this.value, options)
     }
     return this._mf?.formatToParts(data);
   }
