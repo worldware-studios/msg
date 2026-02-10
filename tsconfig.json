@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "target": "es2020",
+    "target": "esnext",
     "outDir": "./dist",
     "esModuleInterop": true,
     "types": [],
