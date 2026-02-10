@@ -1,6 +1,6 @@
 {
   "name": "@worldware/msg",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Message localization tooling",
   "license": "MIT",
   "author": "Joel Sahleen",
