@@ -149,7 +149,7 @@ describe('MsgResource tests', () => {
 
     expect(resource.attributes.lang).toBe('fr');
     expect(resource.attributes.dnt).toBe(true);
-    expect(resource.attributes.dir).toBe(''); // default value
+    expect(resource.attributes.dir).toBe('auto'); // default value
   });
 
   test('MsgResource: title getter and setter', () => {
