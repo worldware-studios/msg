@@ -9,8 +9,8 @@ export type MsgMessageData = {
 }
 
 const DEFAULT_ATTRIBUTES: MsgAttributes = {
-  lang: "",
-  dir: "",
+  lang: "und",
+  dir: "auto",
   dnt: false
 }
 
@@ -18,7 +18,7 @@ export class MsgMessage implements MsgInterface {
   private _key: string;
   private _value: string;
   private _mf?: MessageFormat;
-  private _attributes: MsgAttributes = DEFAULT_ATTRIBUTES;
+  private _attributes: MsgAttributes;
   private _notes: MsgNote[] = [];
 
   private constructor(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]) {
@@ -26,7 +26,7 @@ export class MsgMessage implements MsgInterface {
     this._value = value;
 
     // merge in any attributes
-    this._attributes = attributes ? {...this._attributes, ...attributes} : this._attributes;
+    this._attributes = attributes ? {...DEFAULT_ATTRIBUTES, ...attributes} : {};
 
     // add any notes
     if (notes) {

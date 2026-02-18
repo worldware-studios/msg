@@ -160,6 +160,9 @@ const jsonWithoutNotes = resource.toJSON(true);
 
 // Get data object
 const data = resource.getData();
+
+// Message objects in the output only include `attributes` when they differ from
+// the resource's attributes, keeping the serialized data compact
 ```
 
 ## API Reference
@@ -187,7 +190,7 @@ const data = resource.getData();
 - `translate(data: MsgResourceData): MsgResource` - Create a translated version
 - `getTranslation(lang: string): Promise<MsgResource>` - Load and apply translations
 - `getProject(): MsgProject` - Returns the project instance associated with the resource
-- `getData(stripNotes?: boolean): MsgResourceData` - Get resource data
+- `getData(stripNotes?: boolean): MsgResourceData` - Get resource data. Message objects in the output omit `attributes` when they match the resource's attributes (to avoid redundancy)
 - `toJSON(stripNotes?: boolean): string` - Serialize to JSON
 
 **Properties:**

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { MsgMessage } from '../classes/MsgMessage/MsgMessage.js';
-import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgNote } from '../classes/MsgInterface/MsgInterface.js';
+import { MsgNote } from '../classes/MsgInterface/MsgInterface.js';
 
 
 describe('MsgMessage tests', () => {
@@ -13,9 +13,7 @@ describe('MsgMessage tests', () => {
 
     expect(msg1.key).toBe('my-key');
     expect(msg1.value).toBe('My Value');
-    expect(msg1.attributes.lang).toBe('');
-    expect(msg1.attributes.dir).toBe('');
-    expect(msg1.attributes.dnt).toBe(false);
+    expect(msg1.attributes).toStrictEqual({});
     expect(msg1.notes).toStrictEqual([]);
   });
 
@@ -50,7 +48,7 @@ describe('MsgMessage tests', () => {
     expect(msg3.key).toBe('my-key');
     expect(msg3.value).toBe('My Value');
     expect(msg3.attributes.lang).toBe('fr');
-    expect(msg3.attributes.dir).toBe('');
+    expect(msg3.attributes.dir).toBe('auto'); // from MsgMessage DEFAULT_ATTRIBUTES
     expect(msg3.attributes.dnt).toBe(false);
     expect(msg3.notes).toStrictEqual([]);
 
@@ -67,9 +65,7 @@ describe('MsgMessage tests', () => {
 
     expect(msg4.key).toBe('my-key');
     expect(msg4.value).toBe('My Value');
-    expect(msg4.attributes.lang).toBe('');
-    expect(msg4.attributes.dir).toBe('');
-    expect(msg4.attributes.dnt).toBe(false);
+    expect(msg4.attributes).toStrictEqual({});
     expect(msg4.notes).toStrictEqual([{type: 'DESCRIPTION', content: 'This is a test description'}]);
     expect(msg4.notes.length).toBe(1);
 
@@ -155,17 +151,13 @@ describe('MsgMessage tests', () => {
       value: 'My Value'
     });
 
-    expect(msg5.attributes).toStrictEqual(DEFAULT_ATTRIBUTES);
+    expect(msg5.attributes).toStrictEqual({});
   });
 
   const output = JSON.stringify({
     "key": "my-key",
     "value": "My Value",
-    "attributes": {
-      "lang": "",
-      "dir": "",
-      "dnt": false
-    }
+    "attributes": {}
   }, null, 2);
 
   test('Test generic functions', () => {
