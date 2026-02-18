@@ -164,7 +164,13 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     const messages: MsgMessageData[] = [];
     this.forEach(msg => {
       if (this.hasMatchingAttributes(msg)) {
-        messages.push({ key: msg.key, value: msg.value } as MsgMessageData);
+        // remove attributes from message data if they match the resource attributes
+        const data: MsgMessageData = {
+          key: msg.key,
+          value: msg.value,
+          notes: !stripNotes && msg.notes.length > 0 ? msg.notes : undefined
+        };
+        messages.push(data);
       } else {
         messages.push(msg.getData(stripNotes)) 
       }
