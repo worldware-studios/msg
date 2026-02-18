@@ -12,12 +12,10 @@ export type MsgAttributes = {
 }
 
 export const DEFAULT_ATTRIBUTES: MsgAttributes = {
-  lang: '',
-  dir: '',
+  lang: 'und',
+  dir: 'auto',
   dnt: false
 }
-
-type attributes = keyof MsgAttributes
 
 export interface MsgInterface {
   attributes: MsgAttributes
