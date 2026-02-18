@@ -1,5 +1,5 @@
 import {type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
-import { DEFAULT_ATTRIBUTES, MsgAttributes, MsgInterface, MsgNote } from "../MsgInterface/MsgInterface.js";
+import { DEFAULT_ATTRIBUTES, MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
 import { MsgProject } from "../MsgProject/MsgProject.js";
 
 export type MsgResourceData = {
@@ -11,7 +11,7 @@ export type MsgResourceData = {
 
 export class MsgResource extends Map<string, MsgMessage> implements MsgInterface {
 
-  private _attributes: MsgAttributes = DEFAULT_ATTRIBUTES;
+  private _attributes: MsgAttributes = {};
   private _notes: MsgNote[] = [];
   private _title: string;
 
@@ -37,7 +37,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     super();
     this._title = title;
 
-    this._attributes = {...this._attributes, ...attributes};
+    this._attributes = {...DEFAULT_ATTRIBUTES, ...attributes};
     this._project = project;
 
     if (notes) {

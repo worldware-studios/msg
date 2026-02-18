@@ -1,17 +1,11 @@
 import { MessageFormat, type MessageFormatOptions } from "messageformat";
-import { MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
+import { MsgInterface, DEFAULT_ATTRIBUTES, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
 
 export type MsgMessageData = {
   key: string
   value: string
   attributes?: MsgAttributes;
   notes?: MsgNote[]
-}
-
-const DEFAULT_ATTRIBUTES: MsgAttributes = {
-  lang: "und",
-  dir: "auto",
-  dnt: false
 }
 
 export class MsgMessage implements MsgInterface {
