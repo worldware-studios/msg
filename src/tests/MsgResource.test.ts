@@ -695,6 +695,8 @@ describe('MsgResource tests', () => {
     expect(data.messages!.length).toBe(1);
     expect(data.messages![0].key).toBe('test-1');
     expect(data.messages![0].value).toBe('This is test 1');
+    // When message attributes match resource attributes, they are omitted
+    expect(data.messages![0].attributes).toBeUndefined();
   });
 
   test('MsgResource: "getData" method with stripNotes: true', () => {
@@ -808,6 +810,37 @@ describe('MsgResource tests', () => {
     expect(message?.attributes.lang).toBe('fr'); // overridden
     expect(message?.attributes.dir).toBe('ltr'); // inherited
     expect(message?.attributes.dnt).toBe(true); // overridden
+  });
+
+  test('MsgResource: "getData" includes attributes when message attributes differ from resource', () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: {
+        lang: 'en',
+        dir: 'ltr'
+      },
+      messages: [
+        {
+          key: 'test-1',
+          value: 'This is test 1',
+          attributes: {
+            lang: 'fr',
+            dnt: true
+          }
+        }
+      ]
+    }, project);
+
+    const data = resource.getData();
+
+    expect(data.messages).toBeDefined();
+    expect(data.messages!.length).toBe(1);
+    expect(data.messages![0].key).toBe('test-1');
+    expect(data.messages![0].value).toBe('This is test 1');
+    expect(data.messages![0].attributes).toBeDefined();
+    expect(data.messages![0].attributes!.lang).toBe('fr');
+    expect(data.messages![0].attributes!.dnt).toBe(true);
   });
 
   test('MsgResource: create with messages that have attributes', () => {

@@ -46,6 +46,12 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
   }
 
+  private hasMatchingAttributes(message: MsgMessage): boolean {
+    const res = this.attributes;
+    const msg = message.attributes;
+    return res.lang === msg.lang && res.dir === msg.dir && res.dnt === msg.dnt;
+  }
+
   public get attributes() {
     return this._attributes;
   }
@@ -156,7 +162,13 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
   public getData(stripNotes: boolean = false): MsgResourceData {
 
     const messages: MsgMessageData[] = [];
-    this.forEach(msg => messages.push(msg.getData(stripNotes)))
+    this.forEach(msg => {
+      if (this.hasMatchingAttributes(msg)) {
+        messages.push({ key: msg.key, value: msg.value } as MsgMessageData);
+      } else {
+        messages.push(msg.getData(stripNotes)) 
+      }
+    });
 
     return {
       title: this.title,
