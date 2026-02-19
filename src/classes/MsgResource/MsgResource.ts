@@ -1,4 +1,6 @@
-import {type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
+import { parseMessage, stringifyMessage, visit } from "messageformat";
+import { localize } from "pseudo-localization";
+import { type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
 import { DEFAULT_ATTRIBUTES, MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
 import { MsgProject } from "../MsgProject/MsgProject.js";
 
@@ -50,6 +52,26 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     const res = this.attributes;
     const msg = message.attributes;
     return res.lang === msg.lang && res.dir === msg.dir && res.dnt === msg.dnt;
+  }
+
+  private pseudoLocalizeMF2(
+    source: string,
+    options?: { strategy?: "accented" | "bidi" }
+  ): string {
+    const msg = parseMessage(source);
+
+    visit(msg, {
+      pattern: (pattern) => {
+        for (let i = 0; i < pattern.length; i++) {
+          const part = pattern[i];
+          if (typeof part === "string") {
+            pattern[i] = localize(part, options);
+          }
+        }
+      },
+    });
+
+    return stringifyMessage(msg);
   }
 
   public get attributes() {
@@ -136,6 +158,24 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
   public async getTranslation(lang: string) {
 
     const project = this._project;
+    const pseudoLocale = project.locales.pseudoLocale;
+    if (lang === pseudoLocale) {
+      const pseudolocalizedData: MsgResourceData = {
+        title: this.title,
+        attributes: { ...this.attributes, lang: pseudoLocale },
+        notes: this.notes.length > 0 ? this.notes : undefined,
+        messages: []
+      };
+      this.forEach(msg => {
+        pseudolocalizedData.messages!.push({
+          key: msg.key,
+          value: this.pseudoLocalizeMF2(msg.value),
+          attributes: { ...this.attributes, lang: pseudoLocale }
+        });
+      });
+      return this.translate(pseudolocalizedData);
+    }
+
     const languageChain = project.getTargetLocale(lang);
 
     if(!languageChain) {

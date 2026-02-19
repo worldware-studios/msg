@@ -448,6 +448,57 @@ describe('MsgResource tests', () => {
     expect(translated.get('test-3')?.value).toBe('Original value 3');
   });
 
+  test('MsgResource: "translate" method with undefined messages uses all originals', () => {
+    const project = MsgProject.create(testProjectData);
+    const original = MsgResource.create({
+      title: 'TestResource',
+      attributes: DEFAULT_ATTRIBUTES,
+      messages: [
+        { key: 'test-1', value: 'Original 1' },
+        { key: 'test-2', value: 'Original 2' }
+      ]
+    }, project);
+
+    const translated = original.translate({
+      title: 'TestResource',
+      attributes: { lang: 'zh', dir: 'ltr' }
+    });
+
+    expect(translated.size).toBe(2);
+    expect(translated.get('test-1')?.value).toBe('Original 1');
+    expect(translated.get('test-2')?.value).toBe('Original 2');
+    expect(translated.attributes.lang).toBe('zh');
+  });
+
+  test('MsgResource: "translate" method with messages that have per-message attributes', () => {
+    const project = MsgProject.create(testProjectData);
+    const original = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [
+        { key: 'test-1', value: 'Original' }
+      ]
+    }, project);
+
+    const translated = original.translate({
+      title: 'TestResource',
+      attributes: { lang: 'zh', dir: 'ltr' },
+      messages: [
+        {
+          key: 'test-1',
+          value: 'Translated',
+          attributes: { lang: 'zh', dir: 'rtl', dnt: true }
+        }
+      ]
+    });
+
+    const msg = translated.get('test-1');
+    expect(msg?.value).toBe('Translated');
+    expect(msg?.attributes.lang).toBe('zh');
+    expect(msg?.attributes.dir).toBe('rtl');
+    expect(msg?.attributes.dnt).toBe(true);
+  });
+
   test('MsgResource: "translate" method transfers notes to new messages', () => {
     const project = MsgProject.create(testProjectData);
     const original = MsgResource.create({
@@ -573,6 +624,102 @@ describe('MsgResource tests', () => {
     expect(translated.get('test-4')?.value).toBe('這是測試 4');
   });
 
+  test('MsgResource: "getTranslation" method returns pseudolocalized resource when locale matches pseudoLocale', async () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: {
+        lang: 'en',
+        dir: 'ltr'
+      },
+      notes: [
+        { type: 'DESCRIPTION', content: 'Test resource note' }
+      ],
+      messages: [
+        {
+          key: 'test-1',
+          value: 'This is test 1',
+          notes: [
+            { type: 'DESCRIPTION', content: 'Test message note' }
+          ]
+        },
+        {
+          key: 'test-2',
+          value: 'This is test 2'
+        }
+      ]
+    }, project);
+
+    const translated = await resource.getTranslation('zxx');
+
+    expect(translated.title).toBe('TestResource');
+    expect(translated.attributes.lang).toBe('zxx');
+    expect(translated.size).toBe(2);
+    expect(translated.get('test-1')?.value).toBe('Ŧħīş īş ŧḗḗşŧ 1');
+    expect(translated.get('test-2')?.value).toBe('Ŧħīş īş ŧḗḗşŧ 2');
+    expect(translated.notes.length).toBe(1);
+    expect(translated.notes[0]).toStrictEqual({ type: 'DESCRIPTION', content: 'Test resource note' });
+    expect(translated.get('test-1')?.notes.length).toBe(1);
+    expect(translated.get('test-1')?.notes[0]).toStrictEqual({ type: 'DESCRIPTION', content: 'Test message note' });
+  });
+
+  test('MsgResource: "getTranslation" method with pseudoLocale returns empty resource when source is empty', async () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: {
+        lang: 'en',
+        dir: 'ltr'
+      }
+    }, project);
+
+    const translated = await resource.getTranslation('zxx');
+
+    expect(translated.title).toBe('TestResource');
+    expect(translated.attributes.lang).toBe('zxx');
+    expect(translated.attributes.dir).toBe('ltr');
+    expect(translated.size).toBe(0);
+  });
+
+  test('MsgResource: "getTranslation" method with pseudoLocale preserves dir and dnt from source', async () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: {
+        lang: 'en',
+        dir: 'rtl',
+        dnt: true
+      },
+      messages: [
+        { key: 'test-1', value: 'Hello' }
+      ]
+    }, project);
+
+    const translated = await resource.getTranslation('zxx');
+
+    expect(translated.attributes.lang).toBe('zxx');
+    expect(translated.attributes.dir).toBe('rtl');
+    expect(translated.attributes.dnt).toBe(true);
+  });
+
+  test('MsgResource: "getTranslation" method with pseudoLocale handles MF2 messages with variables', async () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [
+        { key: 'greeting', value: 'Hello, {$name}!' }
+      ]
+    }, project);
+
+    const translated = await resource.getTranslation('zxx');
+    const value = translated.get('greeting')?.value;
+
+    expect(value).toContain('{$name}');
+    expect(value).not.toBe('Hello, {$name}!');
+    expect(value?.startsWith('Ħ') || value?.includes('ŀ')).toBe(true); // pseudolocalized
+  });
+
   test('MsgResource: "getTranslation" method throws error for unsupported locale', async () => {
     const project = MsgProject.create(testProjectData);
     const resource = MsgResource.create({
@@ -611,6 +758,35 @@ describe('MsgResource tests', () => {
     }, project);
 
     await expect(resource.getTranslation('en')).rejects.toThrow('Empty language chain for locale: en');
+  });
+
+  test('MsgResource: "getTranslation" method returns source when all chain entries are missing from targetLocales', async () => {
+    const projectDataAllMissing: MsgProjectData = {
+      project: { name: 'test', version: 1 },
+      locales: {
+        sourceLocale: 'en',
+        pseudoLocale: 'zxx',
+        targetLocales: {
+          en: ['en'],
+          'no-translations': ['missing1', 'missing2'] // neither exists in targetLocales
+        }
+      },
+      loader: async () => {
+        throw new Error('Loader should not be called');
+      }
+    };
+
+    const project = MsgProject.create(projectDataAllMissing);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [{ key: 'test-1', value: 'Original' }]
+    }, project);
+
+    const translated = await resource.getTranslation('no-translations');
+
+    expect(translated).toBe(resource);
+    expect(translated.get('test-1')?.value).toBe('Original');
   });
 
   test('MsgResource: "getTranslation" method skips missing targetLocales entries in chain', async () => {
@@ -722,6 +898,38 @@ describe('MsgResource tests', () => {
 
     expect(data.notes).toBeUndefined();
     expect(data.messages).toBeDefined();
+    expect(data.messages![0].notes).toBeUndefined();
+  });
+
+  test('MsgResource: "getData" method with stripNotes: true and message attributes differing from resource', () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: {
+        lang: 'en',
+        dir: 'ltr'
+      },
+      messages: [
+        {
+          key: 'test-1',
+          value: 'This is test 1',
+          attributes: {
+            lang: 'fr',
+            dnt: true
+          },
+          notes: [
+            { type: 'DESCRIPTION', content: 'Message note' }
+          ]
+        }
+      ]
+    }, project);
+
+    const data = resource.getData(true);
+
+    expect(data.messages).toBeDefined();
+    expect(data.messages!.length).toBe(1);
+    expect(data.messages![0].attributes?.lang).toBe('fr');
+    expect(data.messages![0].attributes?.dnt).toBe(true);
     expect(data.messages![0].notes).toBeUndefined();
   });
 
