@@ -50,15 +50,30 @@ An individual message with:
 
 ### Basic Setup
 
-```typescript
-import { MsgProject, MsgResource } from '@worldware/msg';
+The following example matches the ES module output of the **msg-cli** `create project` command—a typical project file that loads translations from JSON under a translations directory:
 
-// Create a project configuration
-const project = MsgProject.create({
-  project: {
-    name: 'my-app',
-    version: 1
-  },
+```typescript
+import { MsgProject } from '@worldware/msg';
+
+const TRANSLATION_IMPORT_PATH = '../l10n/translations';
+const loader = async (project, title, language) => {
+  const path = `${TRANSLATION_IMPORT_PATH}/${project}/${language}/${title}.json`;
+  try {
+    const module = await import(path, { with: { type: 'json' } });
+    return module.default;
+  } catch (error) {
+    console.warn(`Translations for locale ${language} could not be loaded.`, error);
+    return {
+      title,
+      attributes: { lang: language, dir: '' },
+      notes: [],
+      messages: []
+    };
+  }
+};
+
+export default MsgProject.create({
+  project: { name: 'my-app', version: 1 },
   locales: {
     sourceLocale: 'en',
     pseudoLocale: 'en-XA',
@@ -66,17 +81,14 @@ const project = MsgProject.create({
       'en': ['en'],
       'es': ['es'],
       'fr': ['fr'],
-      'fr-CA': ['fr', 'fr-CA']  // Falls back to 'fr' if 'fr-CA' not available
+      'fr-CA': ['fr', 'fr-CA']
     }
   },
-  loader: async (project, title, lang) => {
-    // Custom loader to fetch translation data
-    const path = `./translations/${project}/${lang}/${title}.json`;
-    const data = await import(path);
-    return data;
-  }
+  loader
 });
 ```
+
+When using this in your app, import the default export as your project and pass it to `MsgResource.create` (see below).
 
 ### Creating a Resource
 
@@ -125,6 +137,19 @@ const spanishResource = await resource.getTranslation('es');
 // The translated resource will have Spanish messages where available,
 // falling back to the source messages for missing translations
 ```
+
+### Language fallbacks and translation layering
+
+The project's `targetLocales` maps each requested locale to a **fallback chain**: an array of locale codes ordered from least specific to most specific (e.g. base language first, then region-specific). For example, `'zh-HK': ['zh', 'zh-Hant', 'zh-HK']` means that when you request `zh-HK`, the chain is first `zh`, then `zh-Hant`, then `zh-HK`. You can get the chain for any locale with `project.getTargetLocale(locale)`.
+
+When you call `resource.getTranslation(locale)`:
+
+1. The **source resource** (the resource you called it on) is the base.
+2. For each locale in that locale's chain, the project **loader** is called to load that locale's translation data.
+3. Each loaded dataset is **layered** onto the current result: messages in the new data add or override by key; keys missing in the new layer keep the value from the previous layer.
+4. The final resource is the result after all layers have been applied.
+
+So for `getTranslation('zh-HK')` with chain `['zh', 'zh-Hant', 'zh-HK']`, you get: source → then zh overlay → then zh-Hant overlay → then zh-HK overlay. Later entries in the chain override earlier ones for the same key; missing keys fall back to the previous layer (and ultimately to the source).
 
 ### Pseudo Localization
 
