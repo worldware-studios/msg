@@ -1,6 +1,6 @@
 {
   "name": "@worldware/msg",
-  "version": "0.6.4",
+  "version": "0.7.0",
   "description": "Message localization tooling",
   "license": "MIT",
   "author": "Joel Sahleen",
@@ -38,7 +38,8 @@
     "vitest": "^4.0.15"
   },
   "dependencies": {
-    "messageformat": "4.0.0-10"
+    "messageformat": "4.0.0-10",
+    "pseudo-localization": "^2.4.0"
   },
   "scripts": {
     "build": "tsup",

@@ -8,6 +8,7 @@ A TypeScript library for managing internationalization (i18n) messages with supp
 
 - **Message Management**: Organize messages into resources with keys and values
 - **Translation Loading**: Load translations from external sources via customizable loaders
+- **Pseudo Localization**: Request a pseudolocalized resource for UI testing via `getTranslation(pseudoLocale)`
 - **Message Formatting**: Format messages with parameters using MessageFormat 2 (MF2) syntax
 - **Attributes & Notes**: Attach metadata (language, direction, do-not-translate flags) and notes to messages
 - **Project Configuration**: Configure projects with locale settings and translation loaders
@@ -25,6 +26,7 @@ npm install @worldware/msg
 A project configuration that defines:
 - Project name and version
 - Source and target locales (with language fallback chains)
+- Pseudo locale (for pseudolocalized output via `getTranslation`)
 - A translation loader function
 
 ### MsgResource
@@ -89,7 +91,7 @@ const resource = MsgResource.create({
   messages: [
     {
       key: 'greeting',
-      value: 'Hello, {name}!'
+      value: 'Hello, {$name}!'
     },
     {
       key: 'welcome',
@@ -99,7 +101,7 @@ const resource = MsgResource.create({
 }, project);
 
 // Or add messages programmatically
-resource.add('goodbye', 'Goodbye, {name}!', {
+resource.add('goodbye', 'Goodbye, {$name}!', {
   lang: 'en',
   dir: 'ltr'
 });
@@ -124,11 +126,25 @@ const spanishResource = await resource.getTranslation('es');
 // falling back to the source messages for missing translations
 ```
 
+### Pseudo Localization
+
+When `getTranslation` is called with the project's `pseudoLocale` (e.g. `en-XA`), it returns a new resource with pseudolocalized message values—useful for testing UI layout and finding hardcoded strings without loading translation files:
+
+```typescript
+// Request pseudolocalized messages (project locales.pseudoLocale is 'en-XA')
+const pseudoResource = await resource.getTranslation('en-XA');
+
+// Message values are transformed: "Hello, {$name}!" → "Ħḗḗŀŀǿǿ, {$name}!"
+// Variables and MF2 syntax are preserved; only literal text is pseudolocalized
+const greeting = pseudoResource.get('greeting')?.format({ name: 'Alice' });
+// Result: "Ħḗḗŀŀǿǿ, Alice!"
+```
+
 ### Working with Attributes and Notes
 
 ```typescript
 // Add notes to messages
-resource.add('complex-message', 'This is a complex message', {
+resource.add('complex-message', 'You have {$count} items', {
   lang: 'en',
   dir: 'ltr',
   dnt: false // do-not-translate flag
@@ -188,7 +204,7 @@ const data = resource.getData();
 **Methods:**
 - `add(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]): MsgResource` - Add a message
 - `translate(data: MsgResourceData): MsgResource` - Create a translated version
-- `getTranslation(lang: string): Promise<MsgResource>` - Load and apply translations
+- `getTranslation(lang: string): Promise<MsgResource>` - Load and apply translations. When `lang` matches the project's `pseudoLocale`, returns a resource with pseudolocalized message values instead of loading from the loader.
 - `getProject(): MsgProject` - Returns the project instance associated with the resource
 - `getData(stripNotes?: boolean): MsgResourceData` - Get resource data. Message objects in the output omit `attributes` when they match the resource's attributes (to avoid redundancy)
 - `toJSON(stripNotes?: boolean): string` - Serialize to JSON
