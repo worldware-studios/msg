@@ -34,6 +34,7 @@
     "@types/typescript": "^0.4.29",
     "@vitest/coverage-v8": "^4.0.15",
     "tsup": "^8.5.1",
+    "typedoc": "^0.28.20",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   },
@@ -46,6 +47,7 @@
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "docs": "typedoc src/index.ts"
   }
 }
