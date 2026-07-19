@@ -134,7 +134,6 @@ describe('MsgMessage tests', () => {
               "value": "5",
             },
           ],
-          "source": "$count",
           "type": "number",
         },
         {
