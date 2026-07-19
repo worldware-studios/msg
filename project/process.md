@@ -91,8 +91,10 @@ keep momentum on the lightweight track.
    accurately documented.
 2. Update any documentation affected by the change, including `README.md` and
    `GETTING_STARTED.md`. Create these files if they do not exist.
-3. Generate API documentation in the `docs/` folder via
-   `npx typedoc src/index.ts` (install `typedoc` first if it is not present).
+3. Generate API documentation into the `docs/` folder via `npm run docs`
+   (backed by `typedoc src/index.ts`; add the `docs` script and the `typedoc`
+   dev dependency if they are missing). The generated `docs/` output is
+   git-ignored — regenerate it on demand rather than committing it.
 4. Review the documentation with the user and incorporate suggestions.
 5. Commit the changes prefixed with `document:` and push. **[approval]**
 

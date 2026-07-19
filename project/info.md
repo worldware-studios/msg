@@ -54,7 +54,16 @@ Notes:
 | Coverage report    | `npm run coverage`    |
 | Build              | `npm run build`       |
 | Type-check only    | `npx tsc --noEmit`    |
-| API docs           | `npx typedoc src/index.ts` |
+| API docs           | `npm run docs`        |
 
-`typedoc` is not currently a project dependency; the docs step will need it
-installed (`npm install --save-dev typedoc`) or run via `npx` before it works.
+`npm run docs` runs `typedoc src/index.ts` (a dev dependency) and writes the
+generated site to the git-ignored `docs/` folder; regenerate it on demand
+rather than committing it.
+
+## Continuous integration
+
+- `.github/workflows/ci.yml` runs on every pull request and push to `main`,
+  executing the Definition-of-done checks (`npx tsc --noEmit`, `npm test`,
+  `npm run build`). PRs must be green here before review.
+- `.github/workflows/npm-publish.yml` runs on release creation to publish the
+  package.
