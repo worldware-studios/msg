@@ -1,5 +1,6 @@
 import { MessageFormat, type MessageFormatOptions } from "messageformat";
-import { MsgInterface, DEFAULT_ATTRIBUTES, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
+import { mf1ToMessage } from "@messageformat/icu-messageformat-1";
+import { MsgInterface, DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, type MsgAttributes, type MsgFormat, type MsgNote } from "../MsgInterface/MsgInterface.js";
 
 export type MsgMessageData = {
   key: string
@@ -55,18 +56,36 @@ export class MsgMessage implements MsgInterface {
     this.notes.push(note);
   }
 
-  public format(data: Record<string, any>, options?: MessageFormatOptions) {
+  /**
+   * The message's resolved format, defaulting to MF2 when not set or inherited.
+   */
+  private resolveFormat(): MsgFormat {
+    return this.attributes.format ?? MSG_DEFAULT_FORMAT;
+  }
+
+  private getFormatter(options?: MessageFormatOptions): MessageFormat {
     if (!this._mf) {
-      this._mf = new MessageFormat(this.attributes.lang, this.value, options)
+      this._mf = this.resolveFormat() === 'MF1'
+        ? mf1ToMessage(this.attributes.lang, this.value, options)
+        : new MessageFormat(this.attributes.lang, this.value, options);
     }
-    return this._mf.format(data);
+    return this._mf;
+  }
+
+  public format(data: Record<string, any>, options?: MessageFormatOptions) {
+    // NONE messages are not formatted; the raw string is returned as-is.
+    if (this.resolveFormat() === 'NONE') {
+      return this.value;
+    }
+    return this.getFormatter(options).format(data);
   }
 
   public formatToParts(data: Record<string, any>, options?: MessageFormatOptions) {
-    if (!this._mf) {
-      this._mf = new MessageFormat(this.attributes.lang, this.value, options)
+    // NONE messages have no placeholders to resolve; return the raw text part.
+    if (this.resolveFormat() === 'NONE') {
+      return [{ type: 'text' as const, value: this.value }];
     }
-    return this._mf?.formatToParts(data);
+    return this.getFormatter(options).formatToParts(data);
   }
 
   public getData(stripNotes: boolean = false) {

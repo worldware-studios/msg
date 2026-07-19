@@ -1,8 +1,10 @@
 import { type MsgResourceData } from "../MsgResource/MsgResource.js";
+import { type MsgFormat, MSG_DEFAULT_FORMAT } from "../MsgInterface/MsgInterface.js";
 
 type MsgProjectSettings = {
   name: string
   version?: number
+  format?: MsgFormat
 };
 
 type MsgTargetLocalesSettings = {
@@ -25,7 +27,8 @@ export type MsgProjectData = {
 
 const defaultProjectSettings: MsgProjectSettings = {
   name: 'messages',
-  version: 1
+  version: 1,
+  format: MSG_DEFAULT_FORMAT
 };
 
 const defaultLocalesSettings: MsgLocalesSettings = {
@@ -66,6 +69,14 @@ export class MsgProject {
 
   public get loader() {
     return this._loader;
+  }
+
+  /**
+   * The project-wide default message format. Resources (and, through them,
+   * messages) inherit this value unless they specify their own.
+   */
+  public get format(): MsgFormat {
+    return this._project.format ?? MSG_DEFAULT_FORMAT;
   }
 
   public getTargetLocale(locale: string): string[] | undefined {
