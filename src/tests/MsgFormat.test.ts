@@ -143,8 +143,10 @@ describe('MsgFormat: MsgMessage.formatToParts', () => {
       attributes: { lang: 'en', format: 'MF1' }
     });
     const parts = msg.formatToParts({ count: 5 });
-    const text = parts.map(p => ('value' in p ? p.value : '')).join('');
-    expect(text).toContain('5 files');
+
+    // The `#` resolves to a nested number part; " files" is a text part.
+    expect(parts.some(p => p.type === 'number')).toBe(true);
+    expect(parts.some(p => p.type === 'text' && p.value === ' files')).toBe(true);
   });
 
   test('returns a single text part when format is NONE', () => {
