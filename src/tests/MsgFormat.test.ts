@@ -224,3 +224,62 @@ describe('MsgFormat: serialization', () => {
     expect(msgData.attributes).toBeUndefined();
   });
 });
+
+describe('MsgFormat: translation preserves format', () => {
+  test('translated resource keeps the source resource format', () => {
+    const project = MsgProject.create(makeProjectData('MF2'));
+    const source = MsgResource.create({
+      title: 'R',
+      attributes: { lang: 'en', dir: 'ltr', format: 'MF1' }
+    }, project);
+
+    const translated = source.translate({
+      title: 'R',
+      attributes: { lang: 'zh', dir: 'ltr' }
+    });
+
+    expect(translated.attributes.format).toBe('MF1');
+  });
+
+  test('translated message keeps the source message format', () => {
+    const project = MsgProject.create(makeProjectData('MF1'));
+    const source = MsgResource.create({
+      title: 'R',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [
+        { key: 'test-1', value: '{count, plural, one {# file} other {# files}}' }
+      ]
+    }, project);
+
+    const translated = source.translate({
+      title: 'R',
+      attributes: { lang: 'zh', dir: 'ltr' },
+      messages: [
+        { key: 'test-1', value: '{count, plural, one {# 个文件} other {# 个文件}}' }
+      ]
+    });
+
+    expect(translated.get('test-1')?.attributes.format).toBe('MF1');
+  });
+
+  test('an explicit translation format overrides the preserved format', () => {
+    const project = MsgProject.create(makeProjectData('MF1'));
+    const source = MsgResource.create({
+      title: 'R',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [
+        { key: 'test-1', value: 'raw' }
+      ]
+    }, project);
+
+    const translated = source.translate({
+      title: 'R',
+      attributes: { lang: 'zh', dir: 'ltr' },
+      messages: [
+        { key: 'test-1', value: 'raw', attributes: { format: 'NONE' } }
+      ]
+    });
+
+    expect(translated.get('test-1')?.attributes.format).toBe('NONE');
+  });
+});

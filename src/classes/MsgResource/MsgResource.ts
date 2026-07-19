@@ -137,7 +137,8 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
     const translated = MsgResource.create({
       title,
-      attributes,
+      // preserve the source resource's format unless the translation overrides it
+      attributes: this.preserveFormat(attributes, this.attributes.format),
       notes: this.notes, // transfer the notes
     }, this._project);
 
@@ -151,7 +152,8 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
       const msg = MsgMessage.create({
         key,
         value,
-        attributes,
+        // preserve the source message's format unless the translation overrides it
+        attributes: this.preserveFormat(attributes, this.get(key)?.attributes.format),
       });
       const notes = this.get(key)?.notes || []; // transfer the notes
       notes.forEach(note => {
@@ -161,6 +163,24 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     })
 
     return translated;
+  }
+
+  /**
+   * Merge a `format` into an attribute set unless one is already present,
+   * so translations inherit the source's format without overriding an
+   * explicitly translated one. Returns the input unchanged when there is
+   * no format to preserve.
+   */
+  private preserveFormat(attributes: MsgAttributes, format: MsgAttributes['format']): MsgAttributes;
+  private preserveFormat(attributes: MsgAttributes | undefined, format: MsgAttributes['format']): MsgAttributes | undefined;
+  private preserveFormat(
+    attributes: MsgAttributes | undefined,
+    format: MsgAttributes['format']
+  ): MsgAttributes | undefined {
+    if (format === undefined || attributes?.format !== undefined) {
+      return attributes;
+    }
+    return { ...attributes, format };
   }
 
   public async getTranslation(lang: string) {
