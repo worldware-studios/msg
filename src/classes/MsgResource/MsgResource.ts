@@ -1,7 +1,7 @@
 import { parseMessage, stringifyMessage, visit } from "messageformat";
 import { localize } from "pseudo-localization";
 import { type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
-import { DEFAULT_ATTRIBUTES, MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
+import { DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
 import { MsgProject } from "../MsgProject/MsgProject.js";
 
 export type MsgResourceData = {
@@ -39,7 +39,8 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     super();
     this._title = title;
 
-    this._attributes = {...DEFAULT_ATTRIBUTES, ...attributes};
+    // Inherit the project's format unless the resource specifies its own.
+    this._attributes = {...DEFAULT_ATTRIBUTES, format: project.format, ...attributes};
     this._project = project;
 
     if (notes) {
@@ -51,7 +52,14 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
   private hasMatchingAttributes(message: MsgMessage): boolean {
     const res = this.attributes;
     const msg = message.attributes;
-    return res.lang === msg.lang && res.dir === msg.dir && res.dnt === msg.dnt;
+    return res.lang === msg.lang
+      && res.dir === msg.dir
+      && res.dnt === msg.dnt
+      && this.resolveFormat(res) === this.resolveFormat(msg);
+  }
+
+  private resolveFormat(attributes: MsgAttributes) {
+    return attributes.format ?? MSG_DEFAULT_FORMAT;
   }
 
   private pseudoLocalizeMF2(
@@ -201,6 +209,9 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
   public getData(stripNotes: boolean = false): MsgResourceData {
 
+    const resourceFormat = this.resolveFormat(this.attributes);
+    const projectFormat = this._project.format;
+
     const messages: MsgMessageData[] = [];
     this.forEach(msg => {
       if (this.hasMatchingAttributes(msg)) {
@@ -212,13 +223,25 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
         };
         messages.push(data);
       } else {
-        messages.push(msg.getData(stripNotes)) 
+        const data = msg.getData(stripNotes);
+        // omit the message's format when it matches the resource's format
+        if (data.attributes && this.resolveFormat(data.attributes) === resourceFormat) {
+          const { format, ...rest } = data.attributes;
+          data.attributes = rest;
+        }
+        messages.push(data);
       }
     });
 
+    // omit the resource's format when it matches the project's format
+    const attributes: MsgAttributes = { ...this.attributes };
+    if (this.resolveFormat(attributes) === projectFormat) {
+      delete attributes.format;
+    }
+
     return {
       title: this.title,
-      attributes: this.attributes,
+      attributes,
       notes: !stripNotes && this.notes.length > 0 ? this.notes : undefined,
       messages
     }
