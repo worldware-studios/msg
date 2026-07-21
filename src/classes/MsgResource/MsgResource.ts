@@ -4,13 +4,26 @@ import { type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
 import { DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
 import { MsgProject } from "../MsgProject/MsgProject.js";
 
+/**
+ * Plain data used to create or describe a {@link MsgResource}.
+ */
 export type MsgResourceData = {
+  /** Title that identifies this resource within a project. */
   title: string
+  /** Locale and formatting metadata for the resource. */
   attributes: MsgAttributes
+  /** Optional notes for translators and tooling. */
   notes?: MsgNote[]
+  /** Optional list of messages in this resource. */
   messages?: MsgMessageData[]
 }
 
+/**
+ * A named collection of messages belonging to a {@link MsgProject}.
+ *
+ * Resources inherit format defaults from their project, support translation
+ * loading (including pseudo-localization), and can serialize to plain data.
+ */
 export class MsgResource extends Map<string, MsgMessage> implements MsgInterface {
 
   private _attributes: MsgAttributes = {};
@@ -19,6 +32,12 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
   private _project: MsgProject;
 
+  /**
+   * Builds a resource from {@link MsgResourceData} and an owning project.
+   *
+   * When `messages` is provided, each entry is added to the resource.
+   * When omitted, the resource starts empty.
+   */
   static create(data: MsgResourceData, project: MsgProject ) {
     const { title, attributes, notes, messages}  = data;
     const res = new MsgResource(title, attributes, project, notes);
@@ -35,6 +54,9 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     return res;
   }
 
+  /**
+   * Creates a resource bound to a project. Prefer {@link MsgResource.create}.
+   */
   private constructor (title: string, attributes: MsgAttributes, project: MsgProject, notes?: MsgNote[]) {
     super();
     this._title = title;
@@ -49,6 +71,9 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
   }
 
+  /**
+   * Returns true when the message's attributes match this resource's attributes.
+   */
   private hasMatchingAttributes(message: MsgMessage): boolean {
     const res = this.attributes;
     const msg = message.attributes;
@@ -58,10 +83,16 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
       && this.resolveFormat(res) === this.resolveFormat(msg);
   }
 
+  /**
+   * Resolves a format from attributes, falling back to the library default.
+   */
   private resolveFormat(attributes: MsgAttributes) {
     return attributes.format ?? MSG_DEFAULT_FORMAT;
   }
 
+  /**
+   * Pseudo-localizes an MF2 message by localizing only literal text parts.
+   */
   private pseudoLocalizeMF2(
     source: string,
     options?: { strategy?: "accented" | "bidi" }
@@ -82,38 +113,55 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     return stringifyMessage(msg);
   }
 
+  /** Locale and formatting metadata for this resource. */
   public get attributes() {
     return this._attributes;
   }
 
+  /** Replaces the resource's locale and formatting metadata. */
   public set attributes(attributes: MsgAttributes) {
     this._attributes = attributes;
   }
   
+  /** Notes attached to this resource for translators and tooling. */
   public get notes() {
     return this._notes;
   }
 
+  /** Replaces the notes attached to this resource. */
   public set notes(notes: MsgNote[]) {
     this._notes = notes;
   }
 
+  /**
+   * Appends a note to this resource.
+   */
   public addNote(note: MsgNote) {
     this.notes.push(note);
   }
 
+  /** Title that identifies this resource within a project. */
   public get title() {
    return this._title;
   }
   
+  /** Sets the title that identifies this resource within a project. */
   public set title(title: string) {
     this._title = title;
   }
 
+  /**
+   * Returns the project this resource belongs to.
+   */
   public getProject(): MsgProject {
     return this._project;
   }
 
+  /**
+   * Adds a message to this resource, merging resource attributes with any overrides.
+   *
+   * @returns This resource, for chaining.
+   */
   public add(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]) {
 
     const merged = {...this.attributes, ...attributes};
@@ -128,6 +176,14 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     return this;
   }
 
+  /**
+   * Builds a translated copy of this resource from translation data.
+   *
+   * Messages present in the translation replace the source; missing keys keep
+   * the source message. Notes are carried over from the source.
+   *
+   * @throws {TypeError} When the translation title does not match this resource.
+   */
   public translate(data: MsgResourceData) {
     const {title, attributes, messages} = data;
 
@@ -183,6 +239,14 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     return { ...attributes, format };
   }
 
+  /**
+   * Loads and applies translations for a locale via the project loader.
+   *
+   * When `lang` is the project's pseudo-locale, returns a pseudo-localized
+   * copy without calling the loader.
+   *
+   * @throws {Error} When the locale is unsupported or its language chain is empty.
+   */
   public async getTranslation(lang: string) {
 
     const project = this._project;
@@ -227,6 +291,14 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     return translated;
   }
 
+  /**
+   * Returns a plain data object for this resource and its messages.
+   *
+   * Attributes that match the resource or project defaults are omitted where
+   * possible to keep the output compact.
+   *
+   * @param stripNotes - When true, notes are omitted from the result.
+   */
   public getData(stripNotes: boolean = false): MsgResourceData {
 
     const resourceFormat = this.resolveFormat(this.attributes);
@@ -267,6 +339,11 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     }
   }
 
+  /**
+   * Serializes this resource to a formatted JSON string.
+   *
+   * @param stripNotes - When true, notes are omitted from the serialized data.
+   */
   public toJSON(stripNotes: boolean = false) {
     return JSON.stringify(this.getData(stripNotes), null, 2);
   }
