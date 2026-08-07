@@ -65,5 +65,5 @@ rather than committing it.
 - `.github/workflows/ci.yml` runs on every pull request and push to `main`,
   executing the Definition-of-done checks (`npx tsc --noEmit`, `npm test`,
   `npm run build`). PRs must be green here before review.
-- `.github/workflows/npm-publish.yml` runs on release creation to publish the
-  package.
+- `.github/workflows/verify-and-release.yml` runs on every version change,
+  and publishes a new package to npm.
