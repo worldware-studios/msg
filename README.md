@@ -267,6 +267,7 @@ const data = resource.getData();
 
 **Methods:**
 - `add(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]): MsgResource` - Add a message
+- `addNote(type: NoteTypes, content: string): MsgResource` - Add a note (returns `this` for chaining)
 - `translate(data: MsgResourceData): MsgResource` - Create a translated version
 - `getTranslation(lang: string): Promise<MsgResource>` - Load and apply translations. When `lang` matches the project's `pseudoLocale`, returns a resource with pseudolocalized message values instead of loading from the loader.
 - `getProject(): MsgProject` - Returns the project instance associated with the resource
@@ -286,7 +287,7 @@ const data = resource.getData();
 **Methods:**
 - `format(data: Record<string, any>, options?: MessageFormatOptions): string` - Format the message according to its resolved `format`: `MF2` uses MessageFormat 2, `MF1` compiles via `@messageformat/icu-messageformat-1`, and `NONE` returns the raw value
 - `formatToParts(data: Record<string, any>, options?: MessageFormatOptions): MessagePart[]` - Format to parts (for `NONE`, a single `{ type: 'text', value }` part)
-- `addNote(note: MsgNote): void` - Add a note
+- `addNote(type: NoteTypes, content: string): MsgMessage` - Add a note (returns `this` for chaining)
 - `getData(stripNotes?: boolean): MsgMessageData` - Get message data
 - `toJSON(stripNotes?: boolean): string` - Serialize to JSON
 
