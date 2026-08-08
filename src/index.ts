@@ -5,3 +5,4 @@
  * resources, and messages.
  */
 export * from './classes/index.js';
+export * from './lib/index.js';
