@@ -178,14 +178,15 @@ describe('MsgMessage tests', () => {
     
     expect(msg.notes.length).toBe(0);
     
-    msg.addNote({type: 'DESCRIPTION', content: 'First note'});
-    expect(msg.notes.length).toBe(1);
+    const chained = msg
+      .addNote('DESCRIPTION', 'First note')
+      .addNote('PARAMETERS', 'Second note');
+    expect(chained).toBe(msg);
+    expect(msg.notes.length).toBe(2);
     expect(msg.notes[0].type).toBe('DESCRIPTION');
     expect(msg.notes[0].content).toBe('First note');
-    
-    msg.addNote({type: 'PARAMETERS', content: 'Second note'});
-    expect(msg.notes.length).toBe(2);
     expect(msg.notes[1].type).toBe('PARAMETERS');
+    expect(msg.notes[1].content).toBe('Second note');
   });
 
   test('MsgMessage: "getData" public method', () => {
@@ -343,7 +344,7 @@ describe('MsgMessage tests', () => {
     ];
     
     originalNotes.forEach(note => {
-      msg.addNote(note);
+      msg.addNote(note.type, note.content);
     });
     
     expect(msg.notes.length).toBe(2);
