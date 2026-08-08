@@ -247,7 +247,12 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
    *
    * @throws {Error} When the locale is unsupported or its language chain is empty.
    */
-  public async getTranslation(lang: string) {
+  public async getTranslation(lang?: string) {
+
+    // if no lang is passed, clone current instance
+    if (!lang) {
+      return MsgResource.create(this.getData(), this.getProject());
+    }
 
     const project = this._project;
     const pseudoLocale = project.locales.pseudoLocale;
