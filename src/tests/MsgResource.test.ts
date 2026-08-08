@@ -226,14 +226,15 @@ describe('MsgResource tests', () => {
 
     expect(resource.notes.length).toBe(0);
 
-    resource.addNote({ type: 'DESCRIPTION', content: 'First note' });
-    expect(resource.notes.length).toBe(1);
+    const chained = resource
+      .addNote('DESCRIPTION', 'First note')
+      .addNote('PARAMETERS', 'Second note');
+    expect(chained).toBe(resource);
+    expect(resource.notes.length).toBe(2);
     expect(resource.notes[0].type).toBe('DESCRIPTION');
     expect(resource.notes[0].content).toBe('First note');
-
-    resource.addNote({ type: 'PARAMETERS', content: 'Second note' });
-    expect(resource.notes.length).toBe(2);
     expect(resource.notes[1].type).toBe('PARAMETERS');
+    expect(resource.notes[1].content).toBe('Second note');
   });
 
   test('MsgResource: "add" method with key and value only', () => {

@@ -1,7 +1,7 @@
 import { parseMessage, stringifyMessage, visit } from "messageformat";
 import { localize } from "pseudo-localization";
 import { type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
-import { DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, MsgInterface, type MsgAttributes, type MsgNote } from "../MsgInterface/MsgInterface.js";
+import { DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, MsgInterface, type MsgAttributes, type MsgNote, type NoteTypes } from "../MsgInterface/MsgInterface.js";
 import { MsgProject } from "../MsgProject/MsgProject.js";
 
 /**
@@ -66,7 +66,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     this._project = project;
 
     if (notes) {
-      notes.forEach(note => this.addNote(note));
+      notes.forEach(note => this.setNote(note));
     }
 
   }
@@ -135,9 +135,21 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
   /**
    * Appends a note to this resource.
+   *
+   * @returns This resource, for chaining.
    */
-  public addNote(note: MsgNote) {
+  public addNote(type: NoteTypes, content: string) {
+    return this.setNote({ type, content });
+  }
+
+  /**
+   * Appends a full note object to this resource.
+   *
+   * @returns This resource, for chaining.
+   */
+  private setNote(note: MsgNote) {
     this.notes.push(note);
+    return this;
   }
 
   /** Title that identifies this resource within a project. */
@@ -213,7 +225,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
       });
       const notes = this.get(key)?.notes || []; // transfer the notes
       notes.forEach(note => {
-        msg.addNote(note);
+        msg.addNote(note.type, note.content);
       })
       translated.set(key, msg);
     })

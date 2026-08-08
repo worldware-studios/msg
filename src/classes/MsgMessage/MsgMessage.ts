@@ -1,6 +1,6 @@
 import { MessageFormat, type MessageFormatOptions } from "messageformat";
 import { mf1ToMessage } from "@messageformat/icu-messageformat-1";
-import { MsgInterface, DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, type MsgAttributes, type MsgFormat, type MsgNote } from "../MsgInterface/MsgInterface.js";
+import { MsgInterface, DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, type MsgAttributes, type MsgFormat, type MsgNote, type NoteTypes } from "../MsgInterface/MsgInterface.js";
 
 /**
  * Plain data used to create a {@link MsgMessage}.
@@ -40,7 +40,7 @@ export class MsgMessage implements MsgInterface {
 
     // add any notes
     if (notes) {
-      notes.forEach(note => this.addNote(note));
+      notes.forEach(note => this.setNote(note));
     }
 
   }
@@ -76,9 +76,21 @@ export class MsgMessage implements MsgInterface {
 
   /**
    * Appends a note to this message.
+   *
+   * @returns This message, for chaining.
    */
-  public addNote(note: MsgNote) {
+  public addNote(type: NoteTypes, content: string) {
+    return this.setNote({ type, content });
+  }
+
+  /**
+   * Appends a full note object to this message.
+   *
+   * @returns This message, for chaining.
+   */
+  private setNote(note: MsgNote) {
     this.notes.push(note);
+    return this;
   }
 
   /**
