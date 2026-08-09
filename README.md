@@ -52,12 +52,12 @@ An individual message with:
 
 ### Basic Setup
 
-The following example matches the ES module output of the **msg-cli** `create project` command—a typical project file that loads translations from JSON under a translations directory:
+The following example matches the ES module output of the **msg-cli** command `msg create project Main en zh fr --format MF1`—a typical project file that loads translations from JSON under a translations directory (`TRANSLATION_IMPORT_PATH` may differ based on your `directories.i18n` / `directories.l10n` layout):
 
-```typescript
+```javascript
 import { MsgProject } from '@worldware/msg';
 
-const TRANSLATION_IMPORT_PATH = '../l10n/translations';
+const TRANSLATION_IMPORT_PATH = "../l10n/translations";
 const loader = async (project, title, language) => {
   const path = `${TRANSLATION_IMPORT_PATH}/${project}/${language}/${title}.json`;
   try {
@@ -75,59 +75,75 @@ const loader = async (project, title, language) => {
 };
 
 export default MsgProject.create({
-  project: { name: 'my-app', version: 1 },
+  project: { name: "Main", version: 1, format: "MF1" },
   locales: {
-    sourceLocale: 'en',
-    pseudoLocale: 'en-XA',
-    targetLocales: {
-      'en': ['en'],
-      'es': ['es'],
-      'fr': ['fr'],
-      'fr-CA': ['fr', 'fr-CA']
-    }
+    sourceLocale: "en",
+    pseudoLocale: "en-XA",
+    targetLocales: {"en":["en"],"zh":["zh"],"fr":["fr"]}
   },
   loader
 });
 ```
 
-When using this in your app, import the default export as your project and pass it to `MsgResource.create` (see below).
+When using this in your app, import the default export as your project (msg-cli scaffolds resources that import it via `#i18n/projects/Main.js`).
 
 ### Creating a Resource
 
-```typescript
-// Create a resource with messages
-const resource = MsgResource.create({
-  title: 'CommonMessages',
-  attributes: {
-    lang: 'en',
-    dir: 'ltr'
-  },
-  messages: [
-    {
-      key: 'greeting',
-      value: 'Hello, {$name}!'
-    },
-    {
-      key: 'welcome',
-      value: 'Welcome to our application'
-    }
-  ]
-}, project);
+The following example matches the ES module output of **msg-cli** `msg create resource Main Messages`:
 
-// Or add messages programmatically
-resource.add('goodbye', 'Goodbye, {$name}!', {
-  lang: 'en',
-  dir: 'ltr'
-});
+```javascript
+/** ESM module **/
+
+import { MsgResource, getLang } from '@worldware/msg';
+import project from '#i18n/projects/Main.js';
+
+/** Create a MsgResource object */
+
+export const resource = MsgResource.create({
+    title: 'Messages',
+    attributes: {
+      lang: 'en',
+      dir: 'ltr'
+    },
+    notes: [
+      {type: 'DESCRIPTION', content: 'This is the Messages resource.'}
+    ]
+  }, project);
+
+/** 
+ * Add messages to the resource using add(key, value, attributes, notes)
+ * The add method is chainable.
+ */
+
+resource
+    .add('sampleKey', 'Sample value.', {}, [
+      { type: 'DESCRIPTION', content: 'This is first message.' }
+    ])
+    .add('sampleKey2', 'Hi, {name}', { dnt: true }, [
+      { type: 'DESCRIPTION', content: 'This is the second message.' },
+      { type: 'PARAMETERS', content: 'The {name} parameter holds the user name.' }
+    ]);
+
+/** 
+ * An async function to get a translated version of the resource 
+ * If the runtime language has not been set using `setLang()`, 
+ * it will return the original resource
+ */
+export async function getMessages() {
+  return await resource.getTranslation(getLang());
+}
 ```
 
 ### Formatting Messages
 
-```typescript
-// Get a message and format it
-const greetingMsg = resource.get('greeting');
+```javascript
+// Format a message from the scaffolded Messages resource (inherits MF1)
+const greetingMsg = resource.get('sampleKey2');
 const formatted = greetingMsg?.format({ name: 'Alice' });
-// Result: "Hello, Alice!"
+// Result: "Hi, Alice"
+
+// Or load a pre-translated resource for the runtime locale
+const messages = await getMessages();
 ```
 
 ### Message Formats (MF1, MF2, NONE)
@@ -139,6 +155,8 @@ Every message is formatted according to its resolved `format` attribute:
 - `NONE` — the value is returned verbatim, with no parsing or interpolation.
 
 The `format` is inheritable: a resource inherits its project's `format` unless it sets its own, and a message inherits its resource's `format` unless it sets its own. The default is `MF2`, so existing code keeps working unchanged. Use a TypeScript union (`'MF1' | 'MF2' | 'NONE'`) — there is no enum.
+
+The following is a **separate illustration** of format inheritance and per-message overrides (not the CLI `Main` / `Messages` scaffold above):
 
 ```typescript
 import { MsgProject, MsgResource } from '@worldware/msg';
@@ -168,12 +186,15 @@ When serializing, an inherited `format` is omitted to keep output compact: a res
 
 ### Loading Translations
 
-```typescript
-// Load a translation for a specific language
-const spanishResource = await resource.getTranslation('es');
+```javascript
+// Load a translation for a configured target locale (zh or fr in the Main project)
+const zhResource = await resource.getTranslation('zh');
 
-// The translated resource will have Spanish messages where available,
+// The translated resource will have Chinese messages where available,
 // falling back to the source messages for missing translations
+
+// Or use the scaffolded helper (honors setLang() / getLang())
+const messages = await getMessages();
 ```
 
 ### Language fallbacks and translation layering
@@ -193,21 +214,21 @@ So for `getTranslation('zh-HK')` with chain `['zh', 'zh-Hant', 'zh-HK']`, you ge
 
 When `getTranslation` is called with the project's `pseudoLocale` (e.g. `en-XA`), it returns a new resource with pseudolocalized message values—useful for testing UI layout and finding hardcoded strings without loading translation files:
 
-```typescript
+```javascript
 // Request pseudolocalized messages (project locales.pseudoLocale is 'en-XA')
 const pseudoResource = await resource.getTranslation('en-XA');
 
-// Message values are transformed: "Hello, {$name}!" → "Ħḗḗŀŀǿǿ, {$name}!"
-// Variables and MF2 syntax are preserved; only literal text is pseudolocalized
-const greeting = pseudoResource.get('greeting')?.format({ name: 'Alice' });
-// Result: "Ħḗḗŀŀǿǿ, Alice!"
+// Message values are transformed: "Hi, {name}" → "Ħī, {name}"
+// Variables and message-format syntax are preserved; only literal text is pseudolocalized
+const greeting = pseudoResource.get('sampleKey2')?.format({ name: 'Alice' });
+// Result: "Ħī, Alice"
 ```
 
 ### Working with Attributes and Notes
 
-```typescript
-// Add notes to messages
-resource.add('complex-message', 'You have {$count} items', {
+```javascript
+// Add notes to messages (MF1 syntax, matching the Main project's format)
+resource.add('complex-message', 'You have {count} items', {
   lang: 'en',
   dir: 'ltr',
   dnt: false // do-not-translate flag
