@@ -137,13 +137,16 @@ export async function getMessages() {
 ### Formatting Messages
 
 ```javascript
-// Format a message from the scaffolded Messages resource (inherits MF1)
-const greetingMsg = resource.get('sampleKey2');
-const formatted = greetingMsg?.format({ name: 'Alice' });
+// Messages inherit MF1 from the Main project scaffold above
+resource.get('sampleKey')?.format();
+// Result: "Sample value."
+
+resource.get('sampleKey2')?.format({ name: 'Alice' });
 // Result: "Hi, Alice"
 
-// Or load a pre-translated resource for the runtime locale
+// Prefer getMessages() when you want the runtime locale (via setLang/getLang)
 const messages = await getMessages();
+messages.get('sampleKey2')?.format({ name: 'Alice' });
 ```
 
 ### Message Formats (MF1, MF2, NONE)
