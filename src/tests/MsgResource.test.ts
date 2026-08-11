@@ -562,6 +562,24 @@ describe('MsgResource tests', () => {
     expect(translated.get('test-2')?.value).toBe('这是测试 2');
   });
 
+  test('MsgResource: "getTranslation" method without lang clones the resource', async () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [
+        { key: 'test-1', value: 'This is test 1' }
+      ]
+    }, project);
+
+    const cloned = await resource.getTranslation();
+
+    expect(cloned).not.toBe(resource);
+    expect(cloned.title).toBe('TestResource');
+    expect(cloned.attributes.lang).toBe('en');
+    expect(cloned.get('test-1')?.value).toBe('This is test 1');
+  });
+
   test('MsgResource: "getTranslation" method with language chain', async () => {
     const project = MsgProject.create(testProjectData);
     const resource = MsgResource.create({

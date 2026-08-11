@@ -62,6 +62,11 @@ describe('pseudoLocalize helpers', () => {
     expect(result.startsWith('Ŧ') || result.includes('ǿ')).toBe(true);
   });
 
+  test('pseudoLocalizeMF1 returns source unchanged when there is no content', () => {
+    expect(pseudoLocalizeMF1('{name}')).toBe('{name}');
+    expect(pseudoLocalizeMF1('')).toBe('');
+  });
+
   test('pseudoLocalize dispatches by format', () => {
     const mf2 = pseudoLocalize('Hi {$n}', 'MF2');
     expect(mf2).toContain('{$n}');
