@@ -37,6 +37,11 @@ that phase pass.
 - Every new feature ships with tests; every bug fix ships with a test that fails
   before the fix and passes after.
 - Write tests before implementation (TDD) as described in the process.
+- **Scaffold assertions:** Prefer behavioral checks (value changed; placeholders
+  / syntax preserved; format still formats) over brittle guesses about how a
+  third-party transform (e.g. `pseudo-localization`) maps individual letters.
+  If an assertion is proven wrong against real library output, fix the test and
+  explain why—do not weaken coverage to force a pass.
 - **Coverage target:** cumulative line/branch coverage **> 90%**; aim higher.
   The target applies to the whole suite, not only integration/e2e tests.
 - Do not weaken or delete tests to make a change pass unless the test is proven
