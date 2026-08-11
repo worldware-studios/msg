@@ -215,16 +215,24 @@ So for `getTranslation('zh-HK')` with chain `['zh', 'zh-Hant', 'zh-HK']`, you ge
 
 ### Pseudo Localization
 
-When `getTranslation` is called with the project's `pseudoLocale` (e.g. `en-XA`), it returns a new resource with pseudolocalized message values—useful for testing UI layout and finding hardcoded strings without loading translation files:
+When `getTranslation` is called with the project's `pseudoLocale` (e.g. `en-XA`), it returns a new resource with pseudolocalized message values—useful for testing UI layout and finding hardcoded strings without loading translation files. Each message is handled according to its resolved `format`:
+
+- **MF2** — only literal text parts are transformed; expressions like `{$name}` stay intact.
+- **MF1** — only human-readable content is transformed; ICU placeholders, plural/select structure, `#`, and formatter styles (e.g. `::currency/EUR`) stay intact.
+- **NONE** — the whole string is transformed.
 
 ```javascript
 // Request pseudolocalized messages (project locales.pseudoLocale is 'en-XA')
 const pseudoResource = await resource.getTranslation('en-XA');
 
-// Message values are transformed: "Hi, {name}" → "Ħī, {name}"
-// Variables and message-format syntax are preserved; only literal text is pseudolocalized
+// MF1 example: literals are accented; syntax is preserved
+// "{count, plural, one {# file} other {# files}}"
+// → "{count, plural, one {# ƒīŀḗ} other {# ƒīŀḗş}}"
+const files = pseudoResource.get('files')?.format({ count: 2 });
+
+// MF2 example: "Hello, {$name}!" → "Ħḗŀŀǿ, {$name}!"
 const greeting = pseudoResource.get('sampleKey2')?.format({ name: 'Alice' });
-// Result: "Ħī, Alice"
+// Result includes accented "Hello" with Alice substituted for {$name}
 ```
 
 ### Working with Attributes and Notes
@@ -293,7 +301,7 @@ const data = resource.getData();
 - `add(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]): MsgResource` - Add a message
 - `addNote(type: NoteTypes, content: string): MsgResource` - Add a note (returns `this` for chaining)
 - `translate(data: MsgResourceData): MsgResource` - Create a translated version
-- `getTranslation(lang: string): Promise<MsgResource>` - Load and apply translations. When `lang` matches the project's `pseudoLocale`, returns a resource with pseudolocalized message values instead of loading from the loader.
+- `getTranslation(lang?: string): Promise<MsgResource>` - Load and apply translations. When `lang` matches the project's `pseudoLocale`, returns a resource with message values pseudo-localized according to each message's resolved `format` (`MF1` / `MF2` / `NONE`) instead of loading from the loader. When `lang` is omitted, returns a clone of the current resource.
 - `getProject(): MsgProject` - Returns the project instance associated with the resource
 - `getData(stripNotes?: boolean): MsgResourceData` - Get resource data. Message objects in the output omit `attributes` when they match the resource's attributes (to avoid redundancy). The resource's `format` is omitted when it equals the project's, and a message's `format` is omitted when it equals the resource's
 - `toJSON(stripNotes?: boolean): string` - Serialize to JSON
@@ -325,6 +333,14 @@ const data = resource.getData();
 
 - `MsgFormat` - `'MF1' | 'MF2' | 'NONE'`; the formatting syntax for a message.
 - `MsgAttributes` - `{ lang?: string; dir?: string; dnt?: boolean; format?: MsgFormat }`.
+
+### Pseudo-localization helpers
+
+Exported from `@worldware/msg` for advanced use (also used internally by `MsgResource.getTranslation`):
+
+- `pseudoLocalize(source, format, options?)` - Dispatch by `MsgFormat`
+- `pseudoLocalizeMF1(source, options?)` / `pseudoLocalizeMF2(source, options?)` / `pseudoLocalizeNone(source, options?)` - Format-specific helpers
+- `PseudoLocalizeOptions` - `{ strategy?: 'accented' | 'bidi' }`
 
 ## Development
 

@@ -231,7 +231,11 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
    * Loads and applies translations for a locale via the project loader.
    *
    * When `lang` is the project's pseudo-locale, returns a pseudo-localized
-   * copy without calling the loader.
+   * copy without calling the loader. Each message is transformed according to
+   * its resolved `format` (`MF1`, `MF2`, or `NONE`): only literal text is
+   * accented; placeholders and message-format syntax are preserved.
+   *
+   * When `lang` is omitted, returns a clone of the current resource.
    *
    * @throws {Error} When the locale is unsupported or its language chain is empty.
    */
