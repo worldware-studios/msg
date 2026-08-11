@@ -1,4 +1,5 @@
 import { parseMessage, stringifyMessage, visit } from "messageformat";
+import { parse, type Token } from "@messageformat/parser";
 import { localize } from "pseudo-localization";
 import type { MsgFormat } from "../classes/MsgInterface/MsgInterface.js";
 
@@ -33,18 +34,71 @@ export function pseudoLocalizeMF2(
 }
 
 /**
+ * Collects human-readable `content` tokens from an MF1 AST.
+ *
+ * Content inside function `param` (arg styles like `::currency/EUR`) is skipped
+ * so formatter options stay intact.
+ */
+function collectMf1ContentTokens(
+  tokens: Token[],
+  into: Array<{ offset: number; length: number; value: string }> = [],
+  inFunctionParam = false
+): Array<{ offset: number; length: number; value: string }> {
+  for (const token of tokens) {
+    switch (token.type) {
+      case "content":
+        if (!inFunctionParam) {
+          into.push({
+            offset: token.ctx.offset,
+            length: token.value.length,
+            value: token.value,
+          });
+        }
+        break;
+      case "plural":
+      case "select":
+      case "selectordinal":
+        for (const selectCase of token.cases) {
+          collectMf1ContentTokens(selectCase.tokens, into, false);
+        }
+        break;
+      case "function":
+        if (token.param) {
+          collectMf1ContentTokens(token.param, into, true);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  return into;
+}
+
+/**
  * Pseudo-localizes an MF1 (ICU MessageFormat 1) message by localizing only
  * human-readable content tokens, preserving placeholders and syntax.
  *
- * @remarks
- * Scaffold stub — implementation lands in the implement phase (Refs #59).
+ * Parses with `@messageformat/parser`, then replaces content spans in the
+ * original source by offset so ICU structure round-trips unchanged.
  */
 export function pseudoLocalizeMF1(
   source: string,
   options?: PseudoLocalizeOptions
 ): string {
-  void options;
-  return source;
+  const tokens = parse(source);
+  const contents = collectMf1ContentTokens(tokens);
+  // Replace from the end so earlier offsets stay valid.
+  contents.sort((a, b) => b.offset - a.offset);
+
+  let result = source;
+  for (const part of contents) {
+    const localized = localize(part.value, options);
+    result =
+      result.slice(0, part.offset) +
+      localized +
+      result.slice(part.offset + part.length);
+  }
+  return result;
 }
 
 /**

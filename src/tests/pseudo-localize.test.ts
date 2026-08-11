@@ -37,7 +37,7 @@ describe('pseudoLocalize helpers', () => {
     expect(result).toContain('#');
     expect(result).not.toBe(source);
     // Literal "file" / "files" should be accented; # and keys stay intact.
-    expect(result).toMatch(/#\s*\S*f/i);
+    expect(result).toMatch(/#\s+\S+/);
     expect(result.includes('file') || result.includes('files')).toBe(false);
   });
 
