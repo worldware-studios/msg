@@ -1,4 +1,5 @@
 /**
- * Barrel export for the lang utils.
+ * Barrel export for library utilities.
  */
 export * from './lang-utils.js';
+export * from './pseudo-localize.js';
