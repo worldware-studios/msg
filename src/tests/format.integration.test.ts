@@ -96,6 +96,40 @@ describe('format integration: mixed MF1/MF2/NONE within one project', () => {
     expect(formatted).toContain('3');
     expect(formatted).toContain('个文件');
   });
+
+  test('pseudoLocale localizes mixed formats and formatting still works', async () => {
+    const project = MsgProject.create(projectData('MF1'));
+    const resource = MsgResource.create({
+      title: 'Home',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [
+        { key: 'files', value: '{count, plural, one {# file} other {# files}}' },
+        { key: 'hi', value: 'Hello, {$name}!', attributes: { format: 'MF2' } },
+        { key: 'raw', value: 'Just text', attributes: { format: 'NONE' } }
+      ]
+    }, project);
+
+    const pseudo = await resource.getTranslation('en-XA');
+
+    expect(pseudo.attributes.lang).toBe('en-XA');
+    expect(pseudo.get('files')?.attributes.format).toBe('MF1');
+    expect(pseudo.get('hi')?.attributes.format).toBe('MF2');
+    expect(pseudo.get('raw')?.attributes.format).toBe('NONE');
+
+    const files = pseudo.get('files')!;
+    expect(files.value).not.toContain('file');
+    expect(files.format({ count: 1 })).toMatch(/1/);
+    expect(files.format({ count: 2 })).toMatch(/2/);
+
+    const hi = pseudo.get('hi')!;
+    expect(hi.value).toContain('{$name}');
+    expect(hi.format({ name: 'Ada' })).toContain('Ada');
+    expect(hi.format({ name: 'Ada' })).not.toContain('Hello');
+
+    const raw = pseudo.get('raw')!;
+    expect(raw.value).not.toBe('Just text');
+    expect(raw.format({})).toBe(raw.value);
+  });
 });
 
 describe('format coverage: default fallbacks', () => {

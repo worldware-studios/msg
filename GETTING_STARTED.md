@@ -91,6 +91,11 @@ const spanish = await resource.getTranslation('es');
 Translations preserve each message's `format`, so an MF1 or `NONE` message stays
 MF1 or `NONE` after translation unless the translation overrides it.
 
+Call `getTranslation` with the project's `pseudoLocale` (for example `'en-XA'`) to
+get a pseudo-localized resource for UI testing. Literal text is transformed while
+MF1/MF2 placeholders and syntax are preserved according to each message's
+`format`.
+
 ## Next steps
 
 - Read [`README.md`](./README.md) for the complete API, serialization rules,
