@@ -31,12 +31,20 @@ Phases below marked **[approval]** require waiting for explicit user approval
 before proceeding. Other checkpoints are for sharing progress; use judgment and
 keep momentum on the lightweight track.
 
+When the user has already approved **entering** a phase, present findings and
+apply clear, default improvements in the same turn when that keeps momentum
+(especially phase 5). Still report what changed; defer only contested or
+ambiguous choices for a separate confirmation.
+
 ### 1. Review and verify the GitHub issue.
-1. Review the GitHub issue indicated by number by the user.
-2. Summarize the issue in 250 words or less.
-3. Ask for feedback to confirm your understanding is correct. **[approval]**
-4. Ensure the default branch is current: `git checkout main && git pull`.
-5. Create a new branch off the default branch named `<repo>-<issue number>`
+1. If the user did not give an issue number, ask for one. If they ask you to
+   open an issue (or none exists yet for the agreed work), create it with `gh
+   issue create`, share the URL, and proceed once they confirm.
+2. Review the GitHub issue indicated by number by the user (or just created).
+3. Summarize the issue in 250 words or less.
+4. Ask for feedback to confirm your understanding is correct. **[approval]**
+5. Ensure the default branch is current: `git checkout main && git pull`.
+6. Create a new branch off the default branch named `<repo>-<issue number>`
    (see branch rules in `project/rules.md`).
 
 ### 2. Research, analyze, and select the best approach.
@@ -54,6 +62,9 @@ keep momentum on the lightweight track.
 3. Stub out class properties and methods, defining input and output types.
 4. Stub out utility functions, defining input and output types.
 5. Create failing unit tests in the appropriate files under `src/tests/`.
+   Prefer behavioral assertions (output differs from source; placeholders and
+   syntax markers remain) over brittle expectations about how third-party
+   transforms spell individual characters—see Testing in `project/rules.md`.
 6. Briefly explain the scaffolding and tests to the user and ask for feedback.
 7. Commit the scaffolding in small, coherent commits prefixed with `scaffold:`
    (see `project/rules.md`).
@@ -71,8 +82,10 @@ keep momentum on the lightweight track.
 ### 5. Review and optimize the codebase.
 1. Review the code and identify any issues or improvements.
 2. Explain potential issues and improvements to the user.
-3. Ask the user for feedback and incorporate it into the approach.
-4. Implement changes to address issues and improvements.
+3. When the user has already approved entering this phase, apply clear/default
+   optimizations in the same turn and report what changed; ask before anything
+   contested or scope-expanding. Otherwise wait for feedback first.
+4. Implement remaining agreed changes.
 5. Make sure all unit tests still pass; adjust code and tests as needed.
 6. Review the code with the user and incorporate suggestions.
 7. Commit the changes prefixed with `optimize:` and push. **[approval]**
