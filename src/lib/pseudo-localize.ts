@@ -75,7 +75,8 @@ function collectMf1ContentTokens(
           collectMf1ContentTokens(token.param, into, true);
         }
         break;
-      default:
+      case "argument":
+      case "octothorpe":
         break;
     }
   }

@@ -249,19 +249,17 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     const project = this._project;
     const pseudoLocale = project.locales.pseudoLocale;
     if (lang === pseudoLocale) {
+      const messages = [...this.values()].map((msg) => ({
+        key: msg.key,
+        value: pseudoLocalize(msg.value, this.resolveFormat(msg.attributes)),
+        attributes: { ...msg.attributes, lang: pseudoLocale }
+      }));
       const pseudolocalizedData: MsgResourceData = {
         title: this.title,
         attributes: { ...this.attributes, lang: pseudoLocale },
         notes: this.notes.length > 0 ? this.notes : undefined,
-        messages: []
+        messages
       };
-      this.forEach(msg => {
-        pseudolocalizedData.messages!.push({
-          key: msg.key,
-          value: pseudoLocalize(msg.value, this.resolveFormat(msg.attributes)),
-          attributes: { ...msg.attributes, lang: pseudoLocale }
-        });
-      });
       return this.translate(pseudolocalizedData);
     }
 
