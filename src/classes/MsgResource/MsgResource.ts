@@ -1,8 +1,7 @@
-import { parseMessage, stringifyMessage, visit } from "messageformat";
-import { localize } from "pseudo-localization";
 import { type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
 import { DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, MsgInterface, type MsgAttributes, type MsgNote, type NoteTypes } from "../MsgInterface/MsgInterface.js";
 import { MsgProject } from "../MsgProject/MsgProject.js";
+import { pseudoLocalize } from "../../lib/pseudo-localize.js";
 
 /**
  * Plain data used to create or describe a {@link MsgResource}.
@@ -88,29 +87,6 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
    */
   private resolveFormat(attributes: MsgAttributes) {
     return attributes.format ?? MSG_DEFAULT_FORMAT;
-  }
-
-  /**
-   * Pseudo-localizes an MF2 message by localizing only literal text parts.
-   */
-  private pseudoLocalizeMF2(
-    source: string,
-    options?: { strategy?: "accented" | "bidi" }
-  ): string {
-    const msg = parseMessage(source);
-
-    visit(msg, {
-      pattern: (pattern) => {
-        for (let i = 0; i < pattern.length; i++) {
-          const part = pattern[i];
-          if (typeof part === "string") {
-            pattern[i] = localize(part, options);
-          }
-        }
-      },
-    });
-
-    return stringifyMessage(msg);
   }
 
   /** Locale and formatting metadata for this resource. */
@@ -278,8 +254,8 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
       this.forEach(msg => {
         pseudolocalizedData.messages!.push({
           key: msg.key,
-          value: this.pseudoLocalizeMF2(msg.value),
-          attributes: { ...this.attributes, lang: pseudoLocale }
+          value: pseudoLocalize(msg.value, this.resolveFormat(msg.attributes)),
+          attributes: { ...msg.attributes, lang: pseudoLocale }
         });
       });
       return this.translate(pseudolocalizedData);

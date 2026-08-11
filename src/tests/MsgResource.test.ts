@@ -721,6 +721,80 @@ describe('MsgResource tests', () => {
     expect(value?.startsWith('Ħ') || value?.includes('ŀ')).toBe(true); // pseudolocalized
   });
 
+  test('MsgResource: "getTranslation" method with pseudoLocale handles MF1 plural messages', async () => {
+    const project = MsgProject.create({
+      ...testProjectData,
+      project: { ...testProjectData.project, format: 'MF1' }
+    });
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [
+        { key: 'files', value: '{count, plural, one {# file} other {# files}}' }
+      ]
+    }, project);
+
+    const translated = await resource.getTranslation('zxx');
+    const value = translated.get('files')?.value;
+
+    expect(value).toBeDefined();
+    expect(value).toContain('{count, plural,');
+    expect(value).toContain('#');
+    expect(value).not.toBe('{count, plural, one {# file} other {# files}}');
+    expect(value!.includes('file')).toBe(false);
+    // Still formats as MF1 after pseudo-localization
+    expect(translated.get('files')?.format({ count: 1 })).toMatch(/1/);
+    expect(translated.get('files')?.format({ count: 2 })).toMatch(/2/);
+  });
+
+  test('MsgResource: "getTranslation" method with pseudoLocale handles NONE messages', async () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [
+        { key: 'plain', value: 'Hello world', attributes: { format: 'NONE' } }
+      ]
+    }, project);
+
+    const translated = await resource.getTranslation('zxx');
+    const value = translated.get('plain')?.value;
+
+    expect(value).toBeDefined();
+    expect(value).not.toBe('Hello world');
+    expect(value?.startsWith('Ħ') || value?.includes('ŀ')).toBe(true);
+    expect(translated.get('plain')?.attributes.format).toBe('NONE');
+  });
+
+  test('MsgResource: "getTranslation" method with pseudoLocale handles mixed formats', async () => {
+    const project = MsgProject.create({
+      ...testProjectData,
+      project: { ...testProjectData.project, format: 'MF1' }
+    });
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'ltr' },
+      messages: [
+        { key: 'files', value: '{count, plural, one {# file} other {# files}}' },
+        { key: 'hi', value: 'Hello, {$name}!', attributes: { format: 'MF2' } },
+        { key: 'plain', value: 'Just text', attributes: { format: 'NONE' } }
+      ]
+    }, project);
+
+    const translated = await resource.getTranslation('zxx');
+
+    const files = translated.get('files')?.value;
+    expect(files).toContain('{count, plural,');
+    expect(files).not.toBe('{count, plural, one {# file} other {# files}}');
+
+    const hi = translated.get('hi')?.value;
+    expect(hi).toContain('{$name}');
+    expect(hi).not.toBe('Hello, {$name}!');
+
+    const plain = translated.get('plain')?.value;
+    expect(plain).not.toBe('Just text');
+  });
+
   test('MsgResource: "getTranslation" method throws error for unsupported locale', async () => {
     const project = MsgProject.create(testProjectData);
     const resource = MsgResource.create({
