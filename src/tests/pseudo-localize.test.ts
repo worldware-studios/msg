@@ -63,8 +63,14 @@ describe('pseudoLocalize helpers', () => {
   });
 
   test('pseudoLocalize dispatches by format', () => {
-    expect(pseudoLocalize('Hi {$n}', 'MF2')).toContain('{$n}');
-    expect(pseudoLocalize('Hi {n}', 'MF1')).toContain('{n}');
+    const mf2 = pseudoLocalize('Hi {$n}', 'MF2');
+    expect(mf2).toContain('{$n}');
+    expect(mf2).not.toBe('Hi {$n}');
+
+    const mf1 = pseudoLocalize('Hi {n}', 'MF1');
+    expect(mf1).toContain('{n}');
+    expect(mf1).not.toBe('Hi {n}');
+
     expect(pseudoLocalize('plain', 'NONE')).not.toBe('plain');
   });
 });

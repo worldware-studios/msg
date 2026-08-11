@@ -10,6 +10,13 @@ export type PseudoLocalizeOptions = {
   strategy?: "accented" | "bidi";
 };
 
+/** A literal span in an MF1 source string eligible for pseudo-localization. */
+type Mf1ContentSpan = {
+  offset: number;
+  length: number;
+  value: string;
+};
+
 /**
  * Pseudo-localizes an MF2 message by localizing only literal text parts.
  */
@@ -37,17 +44,18 @@ export function pseudoLocalizeMF2(
  * Collects human-readable `content` tokens from an MF1 AST.
  *
  * Content inside function `param` (arg styles like `::currency/EUR`) is skipped
- * so formatter options stay intact.
+ * so formatter options stay intact. The `inFunctionParam` flag is preserved when
+ * descending into nested select/plural tokens under a param.
  */
 function collectMf1ContentTokens(
   tokens: Token[],
-  into: Array<{ offset: number; length: number; value: string }> = [],
+  into: Mf1ContentSpan[] = [],
   inFunctionParam = false
-): Array<{ offset: number; length: number; value: string }> {
+): Mf1ContentSpan[] {
   for (const token of tokens) {
     switch (token.type) {
       case "content":
-        if (!inFunctionParam) {
+        if (!inFunctionParam && token.value.length > 0) {
           into.push({
             offset: token.ctx.offset,
             length: token.value.length,
@@ -59,7 +67,7 @@ function collectMf1ContentTokens(
       case "select":
       case "selectordinal":
         for (const selectCase of token.cases) {
-          collectMf1ContentTokens(selectCase.tokens, into, false);
+          collectMf1ContentTokens(selectCase.tokens, into, inFunctionParam);
         }
         break;
       case "function":
@@ -78,26 +86,28 @@ function collectMf1ContentTokens(
  * Pseudo-localizes an MF1 (ICU MessageFormat 1) message by localizing only
  * human-readable content tokens, preserving placeholders and syntax.
  *
- * Parses with `@messageformat/parser`, then replaces content spans in the
- * original source by offset so ICU structure round-trips unchanged.
+ * Parses with `@messageformat/parser`, then rebuilds the source with localized
+ * content spans so ICU structure round-trips unchanged.
  */
 export function pseudoLocalizeMF1(
   source: string,
   options?: PseudoLocalizeOptions
 ): string {
-  const tokens = parse(source);
-  const contents = collectMf1ContentTokens(tokens);
-  // Replace from the end so earlier offsets stay valid.
-  contents.sort((a, b) => b.offset - a.offset);
-
-  let result = source;
-  for (const part of contents) {
-    const localized = localize(part.value, options);
-    result =
-      result.slice(0, part.offset) +
-      localized +
-      result.slice(part.offset + part.length);
+  const spans = collectMf1ContentTokens(parse(source));
+  if (spans.length === 0) {
+    return source;
   }
+
+  spans.sort((a, b) => a.offset - b.offset);
+
+  let result = "";
+  let cursor = 0;
+  for (const span of spans) {
+    result += source.slice(cursor, span.offset);
+    result += localize(span.value, options);
+    cursor = span.offset + span.length;
+  }
+  result += source.slice(cursor);
   return result;
 }
 
