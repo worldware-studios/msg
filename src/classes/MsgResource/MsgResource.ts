@@ -1,5 +1,6 @@
 import { type MsgMessageData, MsgMessage } from "../MsgMessage/MsgMessage.js";
-import { DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, MsgInterface, type MsgAttributes, type MsgNote, type NoteTypes } from "../MsgInterface/MsgInterface.js";
+import { MSG_DEFAULT_FORMAT, MsgInterface, type MsgAttributes, type MsgNote, type NoteTypes } from "../MsgInterface/MsgInterface.js";
+import { applyAttributes } from "../../lib/apply-attributes.js";
 import { MsgProject } from "../MsgProject/MsgProject.js";
 import { pseudoLocalize } from "../../lib/pseudo-localize.js";
 
@@ -61,7 +62,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     this._title = title;
 
     // Inherit the project's format unless the resource specifies its own.
-    this._attributes = {...DEFAULT_ATTRIBUTES, format: project.format, ...attributes};
+    this._attributes = applyAttributes(attributes, { format: project.format });
     this._project = project;
 
     if (notes) {
@@ -96,7 +97,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
   /** Replaces the resource's locale and formatting metadata. */
   public set attributes(attributes: MsgAttributes) {
-    this._attributes = attributes;
+    this._attributes = applyAttributes(attributes);
   }
   
   /** Notes attached to this resource for translators and tooling. */
