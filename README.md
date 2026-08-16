@@ -64,7 +64,7 @@ const loader = async (project, title, language) => {
     const module = await import(path, { with: { type: 'json' } });
     return module.default;
   } catch (error) {
-    console.warn(`Translations for locale ${language} could not be loaded.`, error);
+    console.warn(`Translations for locale ${language} could not be loaded.`);
     return {
       title,
       attributes: { lang: language, dir: 'auto' },
