@@ -67,7 +67,7 @@ const loader = async (project, title, language) => {
     console.warn(`Translations for locale ${language} could not be loaded.`, error);
     return {
       title,
-      attributes: { lang: language, dir: '' },
+      attributes: { lang: language, dir: 'auto' },
       notes: [],
       messages: []
     };
@@ -332,7 +332,7 @@ const data = resource.getData();
 ### Types
 
 - `MsgFormat` - `'MF1' | 'MF2' | 'NONE'`; the formatting syntax for a message.
-- `MsgAttributes` - `{ lang?: string; dir?: string; dnt?: boolean; format?: MsgFormat }`.
+- `MsgAttributes` - `{ lang?: string; dir?: string; dnt?: boolean; format?: MsgFormat }`. Omitted or empty `dir` resolves to `'auto'`.
 
 ### Pseudo-localization helpers
 
