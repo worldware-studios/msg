@@ -1,6 +1,7 @@
 import { MessageFormat, type MessageFormatOptions } from "messageformat";
 import { mf1ToMessage } from "@messageformat/icu-messageformat-1";
-import { MsgInterface, DEFAULT_ATTRIBUTES, MSG_DEFAULT_FORMAT, type MsgAttributes, type MsgFormat, type MsgNote, type NoteTypes } from "../MsgInterface/MsgInterface.js";
+import { MsgInterface, MSG_DEFAULT_FORMAT, type MsgAttributes, type MsgFormat, type MsgNote, type NoteTypes } from "../MsgInterface/MsgInterface.js";
+import { applyAttributes } from "../../lib/apply-attributes.js";
 
 /**
  * Plain data used to create a {@link MsgMessage}.
@@ -35,8 +36,8 @@ export class MsgMessage implements MsgInterface {
     this._key = key;
     this._value = value;
 
-    // merge in any attributes
-    this._attributes = attributes ? {...DEFAULT_ATTRIBUTES, ...attributes} : {};
+    // Always apply library defaults so omitted or empty `dir` becomes `'auto'`.
+    this._attributes = applyAttributes(attributes);
 
     // add any notes
     if (notes) {

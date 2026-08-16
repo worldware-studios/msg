@@ -34,7 +34,7 @@ export const MSG_DEFAULT_FORMAT: MsgFormat = 'MF2';
 export type MsgAttributes = {
   /** BCP 47 language tag for the content (for example, `en` or `zh-Hans`). */
   lang?: string
-  /** Text direction: typically `ltr`, `rtl`, or `auto`. */
+  /** Text direction: typically `ltr`, `rtl`, or `auto`. Omitted or empty values resolve to `'auto'`. */
   dir?: string
   /** When true, the content should not be translated (Do Not Translate). */
   dnt?: boolean

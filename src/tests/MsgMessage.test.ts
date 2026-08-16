@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { MsgMessage } from '../classes/MsgMessage/MsgMessage.js';
-import { MsgNote } from '../classes/MsgInterface/MsgInterface.js';
+import { DEFAULT_ATTRIBUTES, MsgNote } from '../classes/MsgInterface/MsgInterface.js';
 
 
 describe('MsgMessage tests', () => {
@@ -13,7 +13,8 @@ describe('MsgMessage tests', () => {
 
     expect(msg1.key).toBe('my-key');
     expect(msg1.value).toBe('My Value');
-    expect(msg1.attributes).toStrictEqual({});
+    expect(msg1.attributes).toStrictEqual(DEFAULT_ATTRIBUTES);
+    expect(msg1.attributes.dir).toBe('auto');
     expect(msg1.notes).toStrictEqual([]);
   });
 
@@ -65,7 +66,7 @@ describe('MsgMessage tests', () => {
 
     expect(msg4.key).toBe('my-key');
     expect(msg4.value).toBe('My Value');
-    expect(msg4.attributes).toStrictEqual({});
+    expect(msg4.attributes).toStrictEqual(DEFAULT_ATTRIBUTES);
     expect(msg4.notes).toStrictEqual([{type: 'DESCRIPTION', content: 'This is a test description'}]);
     expect(msg4.notes.length).toBe(1);
 
@@ -150,13 +151,49 @@ describe('MsgMessage tests', () => {
       value: 'My Value'
     });
 
-    expect(msg5.attributes).toStrictEqual({});
+    expect(msg5.attributes).toStrictEqual(DEFAULT_ATTRIBUTES);
+  });
+
+  test('Create with empty-string dir normalizes to auto', () => {
+    const msg = MsgMessage.create({
+      key: 'my-key',
+      value: 'My Value',
+      attributes: {
+        lang: 'en',
+        dir: ''
+      }
+    });
+
+    expect(msg.attributes.lang).toBe('en');
+    expect(msg.attributes.dir).toBe('auto');
+  });
+
+  test('Create with explicit dir is preserved', () => {
+    const ltr = MsgMessage.create({
+      key: 'ltr-key',
+      value: 'Left',
+      attributes: { dir: 'ltr' }
+    });
+    const rtl = MsgMessage.create({
+      key: 'rtl-key',
+      value: 'Right',
+      attributes: { dir: 'rtl' }
+    });
+    const auto = MsgMessage.create({
+      key: 'auto-key',
+      value: 'Auto',
+      attributes: { dir: 'auto' }
+    });
+
+    expect(ltr.attributes.dir).toBe('ltr');
+    expect(rtl.attributes.dir).toBe('rtl');
+    expect(auto.attributes.dir).toBe('auto');
   });
 
   const output = JSON.stringify({
     "key": "my-key",
     "value": "My Value",
-    "attributes": {}
+    "attributes": DEFAULT_ATTRIBUTES
   }, null, 2);
 
   test('Test generic functions', () => {

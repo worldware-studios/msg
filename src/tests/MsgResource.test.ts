@@ -152,6 +152,35 @@ describe('MsgResource tests', () => {
     expect(resource.attributes.dir).toBe('auto'); // default value
   });
 
+  test('MsgResource: "create" normalizes empty-string dir to auto', () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: {
+        lang: 'en',
+        dir: ''
+      }
+    }, project);
+
+    expect(resource.attributes.lang).toBe('en');
+    expect(resource.attributes.dir).toBe('auto');
+  });
+
+  test('MsgResource: "create" preserves explicit dir', () => {
+    const project = MsgProject.create(testProjectData);
+    const ltr = MsgResource.create({
+      title: 'LtrResource',
+      attributes: { lang: 'en', dir: 'ltr' }
+    }, project);
+    const rtl = MsgResource.create({
+      title: 'RtlResource',
+      attributes: { lang: 'ar', dir: 'rtl' }
+    }, project);
+
+    expect(ltr.attributes.dir).toBe('ltr');
+    expect(rtl.attributes.dir).toBe('rtl');
+  });
+
   test('MsgResource: title getter and setter', () => {
     const project = MsgProject.create(testProjectData);
     const resource = MsgResource.create({
@@ -197,6 +226,10 @@ describe('MsgResource tests', () => {
     expect(resource.attributes.lang).toBe('fr');
     expect(resource.attributes.dir).toBe('rtl');
     expect(resource.attributes.dnt).toBe(true);
+
+    resource.attributes = { lang: 'de', dir: '' };
+    expect(resource.attributes.lang).toBe('de');
+    expect(resource.attributes.dir).toBe('auto');
   });
 
   test('MsgResource: notes getter and setter', () => {
@@ -277,6 +310,22 @@ describe('MsgResource tests', () => {
     expect(message?.attributes.lang).toBe('fr'); // overridden
     expect(message?.attributes.dir).toBe('ltr'); // inherited from resource
     expect(message?.attributes.dnt).toBe(true); // overridden
+  });
+
+  test('MsgResource: "add" method normalizes empty-string dir override to auto', () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: {
+        lang: 'en',
+        dir: 'ltr'
+      }
+    }, project);
+
+    resource.add('test-key', 'Test Value', { dir: '' });
+
+    expect(resource.get('test-key')?.attributes.dir).toBe('auto');
+    expect(resource.get('test-key')?.attributes.lang).toBe('en');
   });
 
   test('MsgResource: "add" method with notes', () => {
