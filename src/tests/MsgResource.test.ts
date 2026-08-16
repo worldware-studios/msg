@@ -71,6 +71,37 @@ describe('MsgResource tests', () => {
     expect(resource.has('test-2')).toBe(true);
     expect(resource.get('test-1')?.value).toBe('This is test 1');
     expect(resource.get('test-2')?.value).toBe('This is test 2');
+    expect(resource.get('test-1')?.attributes.lang).toBe('en');
+    expect(resource.get('test-1')?.attributes.dir).toBe('ltr');
+    expect(resource.get('test-1')?.attributes.dnt).toBe(false);
+  });
+
+  test('MsgResource: "create" inherits unspecified message lang, dir, and dnt from the resource', () => {
+    const project = MsgProject.create(testProjectData);
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'rtl', dnt: true },
+      messages: [
+        { key: 'omitted', value: 'No attributes' },
+        { key: 'dnt-only', value: 'DNT override', attributes: { dnt: false } },
+        { key: 'lang-only', value: 'Lang override', attributes: { lang: 'fr' } }
+      ]
+    }, project);
+
+    const omitted = resource.get('omitted');
+    expect(omitted?.attributes.lang).toBe('en');
+    expect(omitted?.attributes.dir).toBe('rtl');
+    expect(omitted?.attributes.dnt).toBe(true);
+
+    const dntOnly = resource.get('dnt-only');
+    expect(dntOnly?.attributes.lang).toBe('en');
+    expect(dntOnly?.attributes.dir).toBe('rtl');
+    expect(dntOnly?.attributes.dnt).toBe(false);
+
+    const langOnly = resource.get('lang-only');
+    expect(langOnly?.attributes.lang).toBe('fr');
+    expect(langOnly?.attributes.dir).toBe('rtl');
+    expect(langOnly?.attributes.dnt).toBe(true);
   });
 
   test('MsgResource: "create" static method with notes', () => {
@@ -549,6 +580,44 @@ describe('MsgResource tests', () => {
     expect(msg?.attributes.dnt).toBe(true);
   });
 
+  test('MsgResource: "translate" inherits unspecified message lang, dir, and dnt from the translated resource', () => {
+    const project = MsgProject.create(testProjectData);
+    const original = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'ltr', dnt: false },
+      messages: [
+        { key: 'omitted', value: 'Original omitted' },
+        { key: 'dnt-only', value: 'Original dnt' },
+        { key: 'lang-only', value: 'Original lang' }
+      ]
+    }, project);
+
+    const translated = original.translate({
+      title: 'TestResource',
+      attributes: { lang: 'zh', dir: 'rtl', dnt: true },
+      messages: [
+        { key: 'omitted', value: '翻译 omitted' },
+        { key: 'dnt-only', value: '翻译 dnt', attributes: { dnt: false } },
+        { key: 'lang-only', value: '翻译 lang', attributes: { lang: 'fr' } }
+      ]
+    });
+
+    const omitted = translated.get('omitted');
+    expect(omitted?.attributes.lang).toBe('zh');
+    expect(omitted?.attributes.dir).toBe('rtl');
+    expect(omitted?.attributes.dnt).toBe(true);
+
+    const dntOnly = translated.get('dnt-only');
+    expect(dntOnly?.attributes.lang).toBe('zh');
+    expect(dntOnly?.attributes.dir).toBe('rtl');
+    expect(dntOnly?.attributes.dnt).toBe(false);
+
+    const langOnly = translated.get('lang-only');
+    expect(langOnly?.attributes.lang).toBe('fr');
+    expect(langOnly?.attributes.dir).toBe('rtl');
+    expect(langOnly?.attributes.dnt).toBe(true);
+  });
+
   test('MsgResource: "translate" method transfers notes to new messages', () => {
     const project = MsgProject.create(testProjectData);
     const original = MsgResource.create({
@@ -609,6 +678,50 @@ describe('MsgResource tests', () => {
     expect(translated.size).toBe(2);
     expect(translated.get('test-1')?.value).toBe('这是测试 1');
     expect(translated.get('test-2')?.value).toBe('这是测试 2');
+    expect(translated.get('test-1')?.attributes.lang).toBe('zh');
+    expect(translated.get('test-1')?.attributes.dir).toBe('ltr');
+    expect(translated.get('test-1')?.attributes.dnt).toBe(false);
+  });
+
+  test('MsgResource: "getTranslation" inherits unspecified message lang, dir, and dnt from the translated resource', async () => {
+    const project = MsgProject.create({
+      ...testProjectData,
+      loader: async () => ({
+        title: 'TestResource',
+        attributes: { lang: 'zh', dir: 'rtl', dnt: true },
+        messages: [
+          { key: 'omitted', value: '翻译 omitted' },
+          { key: 'dnt-only', value: '翻译 dnt', attributes: { dnt: false } },
+          { key: 'lang-only', value: '翻译 lang', attributes: { lang: 'fr' } }
+        ]
+      })
+    });
+    const resource = MsgResource.create({
+      title: 'TestResource',
+      attributes: { lang: 'en', dir: 'ltr', dnt: false },
+      messages: [
+        { key: 'omitted', value: 'Original omitted' },
+        { key: 'dnt-only', value: 'Original dnt' },
+        { key: 'lang-only', value: 'Original lang' }
+      ]
+    }, project);
+
+    const translated = await resource.getTranslation('zh');
+
+    const omitted = translated.get('omitted');
+    expect(omitted?.attributes.lang).toBe('zh');
+    expect(omitted?.attributes.dir).toBe('rtl');
+    expect(omitted?.attributes.dnt).toBe(true);
+
+    const dntOnly = translated.get('dnt-only');
+    expect(dntOnly?.attributes.lang).toBe('zh');
+    expect(dntOnly?.attributes.dir).toBe('rtl');
+    expect(dntOnly?.attributes.dnt).toBe(false);
+
+    const langOnly = translated.get('lang-only');
+    expect(langOnly?.attributes.lang).toBe('fr');
+    expect(langOnly?.attributes.dir).toBe('rtl');
+    expect(langOnly?.attributes.dnt).toBe(true);
   });
 
   test('MsgResource: "getTranslation" method without lang clones the resource', async () => {
