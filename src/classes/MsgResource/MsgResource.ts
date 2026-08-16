@@ -149,6 +149,9 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
   /**
    * Adds a message to this resource, merging resource attributes with any overrides.
    *
+   * Unspecified `lang`, `dir`, and `dnt` inherit from this resource; explicit
+   * values on the message win.
+   *
    * @returns This resource, for chaining.
    */
   public add(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]) {
@@ -169,7 +172,8 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
    * Builds a translated copy of this resource from translation data.
    *
    * Messages present in the translation replace the source; missing keys keep
-   * the source message. Notes are carried over from the source.
+   * the source message. Notes are carried over from the source. Unspecified
+   * message `lang`, `dir`, and `dnt` inherit from the translated resource.
    *
    * @throws {TypeError} When the translation title does not match this resource.
    */
@@ -194,17 +198,16 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
 
     messages?.forEach(messageData => {
       const {key, value, attributes} = messageData;
-      const msg = MsgMessage.create({
+      const source = this.get(key);
+      // Inherit lang/dir/dnt from the translated resource (same merge as add()),
+      // while still preserving the source message's format when the translation
+      // does not set one.
+      translated.add(
         key,
         value,
-        // preserve the source message's format unless the translation overrides it
-        attributes: this.preserveFormat(attributes, this.get(key)?.attributes.format),
-      });
-      const notes = this.get(key)?.notes || []; // transfer the notes
-      notes.forEach(note => {
-        msg.addNote(note.type, note.content);
-      })
-      translated.set(key, msg);
+        this.preserveFormat(attributes, source?.attributes.format),
+        source?.notes
+      );
     })
 
     return translated;
