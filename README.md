@@ -159,6 +159,8 @@ Every message is formatted according to its resolved `format` attribute:
 
 The `format` is inheritable: a resource inherits its project's `format` unless it sets its own, and a message inherits its resource's `format` unless it sets its own. The default is `MF2`, so existing code keeps working unchanged. Use a TypeScript union (`'MF1' | 'MF2' | 'NONE'`) — there is no enum.
 
+`lang`, `dir`, and `dnt` inherit the same way on messages: omitted fields (or omitted `attributes`) take the resource's values, and an explicit per-message value still wins. Compact translation JSON can therefore list only overrides. `create()`, `add()`, `translate()`, and `getTranslation()` all apply this merge.
+
 The following is a **separate illustration** of format inheritance and per-message overrides (not the CLI `Main` / `Messages` scaffold above):
 
 ```typescript

@@ -70,6 +70,9 @@ Set `format` to `'MF1'`, `'MF2'`, or `'NONE'` on a project, resource, or
 message. It is a TypeScript union type (there is no enum), and lower levels
 inherit from higher levels unless they override it.
 
+Message `lang`, `dir`, and `dnt` also inherit from the resource when omitted
+(including in compact translation JSON). An explicit per-message value wins.
+
 ```typescript
 // MF1 syntax (ICU MessageFormat 1)
 resource.add('files', '{count, plural, one {# file} other {# files}}', { format: 'MF1' });
