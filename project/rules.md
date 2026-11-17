@@ -46,6 +46,12 @@ that phase pass.
   The target applies to the whole suite, not only integration/e2e tests.
 - Do not weaken or delete tests to make a change pass unless the test is proven
   wrong; if so, explain why.
+- **Tests must type-check.** `tsconfig.json` includes `src/tests/`, so
+  `npx tsc --noEmit` (and CI) checks unit, integration and type-level tests
+  along with the source. Don't exclude test files or silence errors with `any`,
+  `@ts-ignore` or casts that hide real types. Under `noUncheckedIndexedAccess`,
+  prefer optional chaining (`notes[0]?.type`), which keeps the assertion
+  failing if the value is missing.
 
 ## Branches
 
