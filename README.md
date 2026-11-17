@@ -89,7 +89,7 @@ When using this in your app, import the default export as your project (msg-cli 
 
 ### Creating a Resource
 
-The following example matches the ES module output of **msg-cli** `msg create resource Main Messages`:
+The following example matches the ES module output of **msg-cli** `msg create resource Main Messages`, written to `i18n/resources/Messages.msg.js`:
 
 ```javascript
 /** ESM module **/
@@ -107,22 +107,35 @@ export const resource = MsgResource.create({
     },
     notes: [
       {type: 'DESCRIPTION', content: 'This is the Messages resource.'}
-    ]
+    ],
+    /**
+     * The JSDoc const assertion lets TypeScript infer the message keys, so
+     * resource.get('unknownKey') is a compile error. Remove it to opt out.
+     */
+    messages: /** @type {const} */ ([
+      {
+        key: 'sampleKey',
+        value: 'Sample value.',
+        notes: [
+          { type: 'DESCRIPTION', content: 'This is first message.' }
+        ]
+      },
+      {
+        key: 'sampleKey2',
+        value: 'Hi, {name}',
+        attributes: { dnt: true },
+        notes: [
+          { type: 'DESCRIPTION', content: 'This is the second message.' },
+          { type: 'PARAMETERS', content: 'The {name} parameter holds the user name.' }
+        ]
+      }
+    ])
   }, project);
 
-/** 
- * Add messages to the resource using add(key, value, attributes, notes)
- * The add method is chainable.
+/**
+ * More messages can be added with the chainable add(key, value, attributes, notes),
+ * but keys added that way are not part of the inferred key type.
  */
-
-resource
-    .add('sampleKey', 'Sample value.', {}, [
-      { type: 'DESCRIPTION', content: 'This is first message.' }
-    ])
-    .add('sampleKey2', 'Hi, {name}', { dnt: true }, [
-      { type: 'DESCRIPTION', content: 'This is the second message.' },
-      { type: 'PARAMETERS', content: 'The {name} parameter holds the user name.' }
-    ]);
 
 /** 
  * An async function to get a translated version of the resource 
