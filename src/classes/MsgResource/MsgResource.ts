@@ -348,14 +348,18 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
     messages?.forEach(messageData => {
       const {key, value, attributes} = messageData;
       const source = this.get(key as K);
+      // A translation can only replace source messages, never add keys.
+      if (!source) {
+        return;
+      }
       // Inherit lang/dir/dnt from the translated resource (same merge as add()),
       // while still preserving the source message's format when the translation
       // does not set one.
       translated.add(
         key,
         value,
-        this.preserveFormat(attributes, source?.attributes.format),
-        source?.notes
+        this.preserveFormat(attributes, source.attributes.format),
+        source.notes
       );
     })
 
