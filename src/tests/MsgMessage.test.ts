@@ -220,10 +220,10 @@ describe('MsgMessage tests', () => {
       .addNote('PARAMETERS', 'Second note');
     expect(chained).toBe(msg);
     expect(msg.notes.length).toBe(2);
-    expect(msg.notes[0].type).toBe('DESCRIPTION');
-    expect(msg.notes[0].content).toBe('First note');
-    expect(msg.notes[1].type).toBe('PARAMETERS');
-    expect(msg.notes[1].content).toBe('Second note');
+    expect(msg.notes[0]?.type).toBe('DESCRIPTION');
+    expect(msg.notes[0]?.content).toBe('First note');
+    expect(msg.notes[1]?.type).toBe('PARAMETERS');
+    expect(msg.notes[1]?.content).toBe('Second note');
   });
 
   test('MsgMessage: "getData" public method', () => {
