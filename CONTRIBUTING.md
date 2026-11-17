@@ -181,6 +181,20 @@ Before submitting your PR, ensure:
 - Approve PRs that meet the project's standards
 - Request changes when improvements are needed
 
+## AI-Assisted Development
+
+The repo is set up for [Claude Code](https://claude.com/claude-code):
+
+- [`CLAUDE.md`](CLAUDE.md) is loaded automatically and points to the agent
+  workflow in [`project/`](project/).
+- `/implement-github-issue <n>` runs that workflow for a GitHub issue.
+- [`.claude/settings.json`](.claude/settings.json) pre-approves the routine
+  test, build, and `gh` read commands. Put personal overrides in
+  `.claude/settings.local.json`, which is git-ignored.
+
+Other agents can read the same guidance from [`AGENTS.md`](AGENTS.md), a
+symlink to `CLAUDE.md`.
+
 ## Reporting Issues
 
 When reporting bugs or requesting features:
