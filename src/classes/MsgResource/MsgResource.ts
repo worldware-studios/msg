@@ -144,7 +144,8 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
     if (messages) {
       messages.forEach(messageData => {
         const {key, value, attributes, notes} = messageData;
-        // Copy readonly (`as const`) notes so messages own a mutable list.
+        // add() takes a mutable MsgNote[]; spread readonly (`as const`) notes
+        // to satisfy it. MsgMessage copies notes into its own list either way.
         res.add(key, value, attributes, notes && [...notes]);
       })
     } else {
