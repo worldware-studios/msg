@@ -43,7 +43,7 @@ const createHome = () => MsgResource.create({
     { key: 'home.cta.label', value: 'Hi, {$name}', notes: [{ type: 'PARAMETERS', content: '{$name} is the user name.' }] },
     { key: 'home.files', value: '{count, plural, one {# file} other {# files}}', attributes: { format: 'MF1' } },
     { key: 'footer', value: 'Footer' }
-  ]
+  ] as const
 }, MsgProject.create(projectData));
 
 describe('tree integration: typed resource through translation', () => {
@@ -60,7 +60,7 @@ describe('tree integration: typed resource through translation', () => {
     const zh = await createHome().getTranslation('zh');
 
     expect([...zh.keys()].sort()).toEqual(['footer', 'home.cta.label', 'home.files', 'home.title']);
-    expect(zh.has('home.stale' as never)).toBe(false);
+    expect((zh as MsgResource).has('home.stale')).toBe(false);
 
     const tree = zh.toTree();
     expect(tree.home.title.value).toBe('欢迎');

@@ -14,31 +14,45 @@ const typed = MsgResource.create({
   attributes: { lang: 'en' },
   messages: [
     { key: 'home.title', value: 'Home' },
-    { key: 'home.cta.label', value: 'Go' },
-    { key: 'footer', value: 'Footer' }
-  ]
+    { key: 'home.cta.label', value: 'Go', notes: [{ type: 'DESCRIPTION', content: 'Button label' }] },
+    { key: 'footer', value: 'Footer', attributes: { format: 'NONE' } }
+  ] as const
 }, project);
 
 type TypedKeys = 'home.title' | 'home.cta.label' | 'footer';
 
 describe('MsgResource key inference', () => {
-  test('create() infers the key union from inline message data', () => {
+  test('create() infers the key union when messages are `as const`', () => {
     expectTypeOf(typed).toEqualTypeOf<MsgResource<TypedKeys>>();
   });
 
-  test('create() infers keys from an `as const` definition', () => {
+  test('create() infers keys from a fully `as const` definition, including notes', () => {
     const definition = {
       title: 'Const',
-      attributes: { lang: 'en' },
+      attributes: { lang: 'en', dir: 'ltr' },
+      notes: [{ type: 'DESCRIPTION', content: 'Resource note' }],
       messages: [{ key: 'a.b', value: 'x' }, { key: 'c', value: 'y' }]
     } as const;
     expectTypeOf(MsgResource.create(definition, project)).toEqualTypeOf<MsgResource<'a.b' | 'c'>>();
   });
 
-  test('annotated MsgResourceData and message-less data stay untyped', () => {
+  test('inline messages without `as const` stay untyped, so existing code keeps compiling', () => {
+    const resource = MsgResource.create({
+      title: 'Inline',
+      attributes: { lang: 'en' },
+      messages: [{ key: 'greeting', value: 'Hello' }]
+    }, project);
+    expectTypeOf(resource).toEqualTypeOf<MsgResource<string>>();
+    // The GETTING_STARTED pattern: add() more keys, then get() them.
+    resource.add('files', '{count, plural, other {# files}}', { format: 'MF1' });
+    expectTypeOf(resource.get('files')).toEqualTypeOf<MsgMessage | undefined>();
+  });
+
+  test('annotated MsgResourceData, message-less and empty data stay untyped', () => {
     const data: MsgResourceData = { title: 'Wide', attributes: {} };
     expectTypeOf(MsgResource.create(data, project)).toEqualTypeOf<MsgResource<string>>();
     expectTypeOf(MsgResource.create({ title: 'Empty', attributes: {} }, project)).toEqualTypeOf<MsgResource<string>>();
+    expectTypeOf(MsgResource.create({ title: 'Empty', attributes: {}, messages: [] as const }, project)).toEqualTypeOf<MsgResource<string>>();
   });
 
   test('get() and has() accept known keys and reject unknown ones', () => {

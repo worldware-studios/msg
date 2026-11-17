@@ -30,7 +30,7 @@ describe('MsgResource: toTree', () => {
         { key: 'home.title', value: 'Home' },
         { key: 'home.cta.label', value: 'Go' },
         { key: 'footer', value: 'Footer' }
-      ]
+      ] as const
     }, project);
 
     const tree = resource.toTree();
@@ -196,7 +196,7 @@ describe('MsgResource: translate ignores unknown keys', () => {
     const resource = MsgResource.create({
       title: 'Tree',
       attributes: { lang: 'en' },
-      messages: [{ key: 'greeting', value: 'Hello' }]
+      messages: [{ key: 'greeting', value: 'Hello' }] as const
     }, project);
 
     const translated = await resource.getTranslation('zh');

@@ -47,10 +47,22 @@ export type MsgTree<K extends string> = string extends K
   : { readonly [H in MsgKeyHead<K>]: H extends K ? MsgMessage : MsgTree<MsgKeyRest<K, H>> };
 
 /**
- * Key union of the messages inferred by {@link MsgResource.create}. An empty
- * message list yields `string` so the resource stays usable.
+ * A message as {@link MsgResource.create} accepts it: {@link MsgMessageData}
+ * with readonly properties, so `as const` data is accepted.
  */
-type MsgMessageKeys<M extends readonly MsgMessageData[]> = M extends readonly [] ? string : M[number]['key'];
+type MsgMessageInput = {
+  readonly key: string
+  readonly value: string
+  readonly attributes?: Readonly<MsgAttributes>
+  readonly notes?: readonly Readonly<MsgNote>[]
+};
+
+/**
+ * Key union of the messages passed to {@link MsgResource.create}. Keys are
+ * literal types only for `as const` data; an empty list yields `string` so
+ * the resource stays usable.
+ */
+type MsgMessageKeys<M extends readonly MsgMessageInput[]> = M extends readonly [] ? string : M[number]['key'];
 
 /**
  * Every proper dot-separated prefix of a key, i.e. its branches in the tree:
@@ -94,23 +106,36 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
    * When `messages` is provided, each entry is added to the resource.
    * When omitted, the resource starts empty.
    *
-   * Message keys are inferred from literal data (inline or `as const`), so
-   * `get()` and `toTree()` only accept keys the resource defines. `messages`
-   * may be a readonly array so `as const` definitions are accepted.
+   * **Typed keys are opt-in with `as const`.** When `messages` (or the whole
+   * definition) is `as const`, the resource's key type is the union of its
+   * message keys, so `get()`, `has()` and `toTree()` reject unknown keys.
+   * Without `as const` the key type is `string`, exactly as before, so a
+   * resource can keep growing through `add()`.
    *
-   * `messages` is inferred as a tuple rather than an array: an array literal
-   * of objects with distinct literal keys makes TypeScript compare every pair
-   * of elements, which fails (TS2590) above roughly 1,000 messages. A tuple
-   * avoids that and works up to TypeScript's ~10,000-element tuple limit.
+   * ```ts
+   * const typed = MsgResource.create({
+   *   title: 'Home',
+   *   attributes: { lang: 'en' },
+   *   messages: [{ key: 'home.title', value: 'Welcome' }] as const
+   * }, project);
+   * typed.get('home.titel'); // compile error
+   * ```
    *
-   * @typeParam K - Key type used while inferring `M`; it keeps each message's
-   *   `key` a literal type.
-   * @typeParam M - The inferred message list.
+   * `as const` data is a tuple, so inference also scales to large resources:
+   * up to TypeScript's ~10,000-element tuple limit.
+   *
+   * @typeParam M - The message list; its `key` types become the resource's
+   *   key type.
    * @throws {TypeError} When one key is a dot-separated prefix of another
    *   (for example `a` and `a.b`).
    */
-  static create<K extends string, M extends readonly MsgMessageData<K>[] = MsgMessageData<K>[]>(
-    data: Omit<MsgResourceData, 'messages'> & { messages?: readonly [...M] },
+  static create<M extends readonly MsgMessageInput[] = MsgMessageData[]>(
+    data: {
+      readonly title: string
+      readonly attributes: Readonly<MsgAttributes>
+      readonly notes?: readonly Readonly<MsgNote>[]
+      readonly messages?: M
+    },
     project: MsgProject
   ): MsgResource<MsgMessageKeys<M>> {
     const { title, attributes, notes, messages}  = data;
@@ -119,7 +144,8 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
     if (messages) {
       messages.forEach(messageData => {
         const {key, value, attributes, notes} = messageData;
-        res.add(key, value, attributes, notes);
+        // Copy readonly (`as const`) notes so messages own a mutable list.
+        res.add(key, value, attributes, notes && [...notes]);
       })
     } else {
       res.clear();
@@ -131,7 +157,7 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
   /**
    * Creates a resource bound to a project. Prefer {@link MsgResource.create}.
    */
-  private constructor (title: string, attributes: MsgAttributes, project: MsgProject, notes?: MsgNote[]) {
+  private constructor (title: string, attributes: Readonly<MsgAttributes>, project: MsgProject, notes?: readonly Readonly<MsgNote>[]) {
     super();
     this._title = title;
 
@@ -347,12 +373,15 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
       throw new TypeError('Title of resource and translations do not match.');
     }
 
-    const translated = MsgResource.create<K>({
+    // Built directly (not via create()) so the translation keeps this
+    // resource's key type; it starts empty and is filled below.
+    const translated = new MsgResource<K>(
       title,
       // preserve the source resource's format unless the translation overrides it
-      attributes: this.preserveFormat(attributes, this.attributes.format),
-      notes: this.notes, // transfer the notes
-    }, this._project);
+      this.preserveFormat(attributes, this.attributes.format),
+      this._project,
+      this.notes // transfer the notes
+    );
 
     // use messages from the resource as defaults
     this.forEach((msg, key) => {

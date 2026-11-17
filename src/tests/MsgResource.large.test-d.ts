@@ -1,5 +1,5 @@
 /**
- * Regression test: create() must infer keys for large inline resources.
+ * Regression test: create() must infer keys for large `as const` resources.
  * An array-typed `messages` parameter failed with TS2590 ("union type that
  * is too complex to represent") above roughly 1,000 messages; the tuple-typed
  * parameter does not. Generated: 1500 messages across 20 × 10 branches.
@@ -165,7 +165,7 @@ const large = MsgResource.create({
     {key:"s10.g3.m1470",value:""},{key:"s11.g3.m1471",value:""},{key:"s12.g3.m1472",value:""},{key:"s13.g3.m1473",value:""},{key:"s14.g3.m1474",value:""},{key:"s15.g3.m1475",value:""},{key:"s16.g3.m1476",value:""},{key:"s17.g3.m1477",value:""},{key:"s18.g3.m1478",value:""},{key:"s19.g3.m1479",value:""},
     {key:"s0.g4.m1480",value:""},{key:"s1.g4.m1481",value:""},{key:"s2.g4.m1482",value:""},{key:"s3.g4.m1483",value:""},{key:"s4.g4.m1484",value:""},{key:"s5.g4.m1485",value:""},{key:"s6.g4.m1486",value:""},{key:"s7.g4.m1487",value:""},{key:"s8.g4.m1488",value:""},{key:"s9.g4.m1489",value:""},
     {key:"s10.g4.m1490",value:""},{key:"s11.g4.m1491",value:""},{key:"s12.g4.m1492",value:""},{key:"s13.g4.m1493",value:""},{key:"s14.g4.m1494",value:""},{key:"s15.g4.m1495",value:""},{key:"s16.g4.m1496",value:""},{key:"s17.g4.m1497",value:""},{key:"s18.g4.m1498",value:""},{key:"s19.g4.m1499",value:""},
-  ]
+  ] as const
 }, project);
 
 describe("MsgResource: large inline resources", () => {
