@@ -47,6 +47,18 @@ export type MsgTree<K extends string> = string extends K
   : { readonly [H in MsgKeyHead<K>]: H extends K ? MsgMessage : MsgTree<MsgKeyRest<K, H>> };
 
 /**
+ * Every proper dot-separated prefix of a key, i.e. its branches in the tree:
+ * `'a.b.c'` → `['a', 'a.b']`.
+ */
+function branchPrefixes(key: string): string[] {
+  const prefixes: string[] = [];
+  for (let i = key.indexOf('.'); i !== -1; i = key.indexOf('.', i + 1)) {
+    prefixes.push(key.slice(0, i));
+  }
+  return prefixes;
+}
+
+/**
  * A named collection of messages belonging to a {@link MsgProject}.
  *
  * Resources inherit format defaults from their project, support translation
@@ -62,6 +74,13 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
   private _title: string;
 
   private _project: MsgProject;
+
+  /**
+   * For every key prefix that is a branch in the tree (`a` and `a.b` for key
+   * `a.b.c`), how many stored keys pass through it. Keeps collision checks
+   * proportional to key depth instead of resource size.
+   */
+  private _branches = new Map<string, number>();
 
   /**
    * Builds a resource from {@link MsgResourceData} and an owning project.
@@ -219,17 +238,56 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
    *   cannot be both a message and a branch.
    */
   public override set(key: K, value: MsgMessage): this {
+    // Replacing an existing message cannot change the tree's shape.
+    if (!this.has(key)) {
+      this.assertNoCollision(key);
+      this.updateBranches(key, 1);
+    }
     return super.set(key, value);
   }
 
   /** Removes the message stored under `key`. */
   public override delete(key: K): boolean {
-    return super.delete(key);
+    const deleted = super.delete(key);
+    if (deleted) {
+      this.updateBranches(key, -1);
+    }
+    return deleted;
   }
 
   /** Removes every message from this resource. */
   public override clear(): void {
     super.clear();
+    this._branches.clear();
+  }
+
+  /**
+   * Throws when `key` would be both a message and a branch in the tree.
+   */
+  private assertNoCollision(key: string): void {
+    if (this._branches.has(key)) {
+      const descendant = [...this.keys()].find(existing => existing.startsWith(`${key}.`));
+      throw new TypeError(`Message key "${key}" collides with "${descendant}": a key cannot also be a prefix of another key.`);
+    }
+    const leaf = branchPrefixes(key).find(prefix => this.has(prefix as K));
+    if (leaf !== undefined) {
+      throw new TypeError(`Message key "${key}" collides with "${leaf}": a key cannot also be a prefix of another key.`);
+    }
+  }
+
+  /**
+   * Adds `delta` to the count of every branch `key` passes through,
+   * dropping branches that no key uses any more.
+   */
+  private updateBranches(key: string, delta: 1 | -1): void {
+    for (const prefix of branchPrefixes(key)) {
+      const count = (this._branches.get(prefix) ?? 0) + delta;
+      if (count > 0) {
+        this._branches.set(prefix, count);
+      } else {
+        this._branches.delete(prefix);
+      }
+    }
   }
 
   /**
