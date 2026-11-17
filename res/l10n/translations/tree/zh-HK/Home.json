@@ -1,0 +1,17 @@
+{
+  "title": "Home",
+  "attributes": {
+    "lang": "zh-HK",
+    "dir": "ltr"
+  },
+  "messages": [
+    {
+      "key": "home.title",
+      "value": "歡迎"
+    },
+    {
+      "key": "home",
+      "value": "與分支衝突的舊訊息"
+    }
+  ]
+}
