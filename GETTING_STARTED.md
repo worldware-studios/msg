@@ -64,7 +64,31 @@ resource.add('itemCount', 'You have {$count} items');
 resource.get('greeting')?.format({ name: 'Alice' }); // "Hello, Alice!"
 ```
 
-## 5. Choose a format
+## 5. Type your keys (optional)
+
+Add `as const` to the messages and TypeScript checks every key. A typo
+becomes a compile error, and `toTree()` gives a nested view of
+dot-separated keys.
+
+```typescript
+const home = MsgResource.create({
+  title: 'Home',
+  attributes: { lang: 'en', dir: 'ltr' },
+  messages: [
+    { key: 'home.title', value: 'Welcome' },
+    { key: 'home.cta.label', value: 'Hi, {$name}' }
+  ] as const
+}, project);
+
+home.get('home.titel');                       // compile error
+home.toTree().home.cta.label.format({ name: 'Ada' });
+```
+
+Without `as const`, keys are plain strings, which suits resources you keep
+growing with `add()`. A key can't be both a message and a prefix of another
+key: `home` and `home.title` can't coexist.
+
+## 6. Choose a format
 
 Set `format` to `'MF1'`, `'MF2'`, or `'NONE'` on a project, resource, or
 message. It is a TypeScript union type (there is no enum), and lower levels
@@ -85,14 +109,16 @@ resource.get('token')?.format({ sha: 'abc' }); // "build:{sha}"
 
 Because the default is `MF2`, existing MF2 code keeps working with no changes.
 
-## 6. Load translations
+## 7. Load translations
 
 ```typescript
 const spanish = await resource.getTranslation('es');
 ```
 
 Translations preserve each message's `format`, so an MF1 or `NONE` message stays
-MF1 or `NONE` after translation unless the translation overrides it.
+MF1 or `NONE` after translation unless the translation overrides it. A
+translated resource has exactly the source's keys: keys that exist only in a
+translation file are ignored.
 
 Call `getTranslation` with the project's `pseudoLocale` (for example `'en-XA'`) to
 get a pseudo-localized resource for UI testing. Literal text is transformed while

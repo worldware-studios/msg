@@ -83,7 +83,7 @@ function branchPrefixes(key: string): string[] {
  * loading (including pseudo-localization), and can serialize to plain data.
  *
  * @typeParam K - Union of message keys. Inferred by {@link MsgResource.create}
- *   from literal message data; defaults to `string`.
+ *   when its messages are `as const`; otherwise `string`.
  */
 export class MsgResource<K extends string = string> extends Map<K, MsgMessage> implements MsgInterface {
 
@@ -252,7 +252,11 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
    * Unspecified `lang`, `dir`, and `dnt` inherit from this resource; explicit
    * values on the message win.
    *
+   * Accepts any string key and does not change the resource's key type.
+   *
    * @returns This resource, for chaining.
+   * @throws {TypeError} When `key` and an existing key are dot-separated
+   *   prefixes of one another (for example `a` and `a.b`).
    */
   public add(key: string, value: string, attributes?: MsgAttributes, notes?: MsgNote[]) {
 

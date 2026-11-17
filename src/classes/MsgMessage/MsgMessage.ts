@@ -6,8 +6,8 @@ import { applyAttributes } from "../../lib/apply-attributes.js";
 /**
  * Plain data used to create a {@link MsgMessage}.
  *
- * @typeParam K - The message key. Defaults to `string`; a literal type lets
- *   `MsgResource.create()` infer a resource's key union.
+ * @typeParam K - The message key. Defaults to `string`; `as const` message
+ *   data lets `MsgResource.create()` infer a resource's key union.
  */
 export type MsgMessageData<K extends string = string> = {
   /** Unique key that identifies this message within a resource. */
