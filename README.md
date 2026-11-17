@@ -171,6 +171,7 @@ tree.footer.toString();                      // "Footer"
 ```
 
 - **Opt-in.** Without `as const`, keys are typed as `string`, so a resource can keep growing with `add()`. `add()` always accepts any string and doesn't change the resource's key type.
+- **JavaScript files** (such as msg-cli's `.msg.js` resources) can't use `as const`. Use the JSDoc form instead, `messages: /** @type {const} */ ([ … ])`, and editors and `tsc --checkJs` give the same key checking.
 - **Typed resources are still `MsgResource`s.** You can pass one anywhere a plain `MsgResource` is expected.
 - **Translations keep the key type.** `translate()` and `getTranslation()` return a resource with the same keys as the source (see [Language fallbacks and translation layering](#language-fallbacks-and-translation-layering)).
 - **No key can be both a message and a branch.** Adding `a` when `a.b` exists, or `a.b` when `a` exists, throws a `TypeError`. Replacing an existing key is fine, and `delete()` / `clear()` free the path again.
