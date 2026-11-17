@@ -299,7 +299,20 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
    * typed resource stays assignable to a plain `MsgResource`.
    */
   public toTree<T extends string>(this: MsgResource<T>): MsgTree<T> {
-    throw new Error('Not implemented');
+    // Null-prototype nodes, so keys like `constructor` or `__proto__` become
+    // ordinary own properties instead of resolving to Object.prototype members.
+    const root: Record<string, unknown> = Object.create(null);
+    for (const [key, msg] of this) {
+      const segments = key.split('.');
+      const leaf = segments.pop() as string; // split() always yields at least one segment
+      let node = root;
+      for (const segment of segments) {
+        // Collision checks in set() guarantee an existing node here is a branch.
+        node = (node[segment] ??= Object.create(null)) as Record<string, unknown>;
+      }
+      node[leaf] = msg;
+    }
+    return root as MsgTree<T>;
   }
 
   /**
