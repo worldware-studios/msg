@@ -295,10 +295,10 @@ describe('MsgResource tests', () => {
       .addNote('PARAMETERS', 'Second note');
     expect(chained).toBe(resource);
     expect(resource.notes.length).toBe(2);
-    expect(resource.notes[0].type).toBe('DESCRIPTION');
-    expect(resource.notes[0].content).toBe('First note');
-    expect(resource.notes[1].type).toBe('PARAMETERS');
-    expect(resource.notes[1].content).toBe('Second note');
+    expect(resource.notes[0]?.type).toBe('DESCRIPTION');
+    expect(resource.notes[0]?.content).toBe('First note');
+    expect(resource.notes[1]?.type).toBe('PARAMETERS');
+    expect(resource.notes[1]?.content).toBe('Second note');
   });
 
   test('MsgResource: "add" method with key and value only', () => {
@@ -1148,10 +1148,10 @@ describe('MsgResource tests', () => {
     expect(data.notes).toStrictEqual([{ type: 'DESCRIPTION', content: 'Test note' }]);
     expect(data.messages).toBeDefined();
     expect(data.messages!.length).toBe(1);
-    expect(data.messages![0].key).toBe('test-1');
-    expect(data.messages![0].value).toBe('This is test 1');
+    expect(data.messages![0]?.key).toBe('test-1');
+    expect(data.messages![0]?.value).toBe('This is test 1');
     // When message attributes match resource attributes, they are omitted
-    expect(data.messages![0].attributes).toBeUndefined();
+    expect(data.messages![0]?.attributes).toBeUndefined();
   });
 
   test('MsgResource: "getData" method with stripNotes: true', () => {
@@ -1177,7 +1177,7 @@ describe('MsgResource tests', () => {
 
     expect(data.notes).toBeUndefined();
     expect(data.messages).toBeDefined();
-    expect(data.messages![0].notes).toBeUndefined();
+    expect(data.messages![0]?.notes).toBeUndefined();
   });
 
   test('MsgResource: "getData" method with stripNotes: true and message attributes differing from resource', () => {
@@ -1207,9 +1207,9 @@ describe('MsgResource tests', () => {
 
     expect(data.messages).toBeDefined();
     expect(data.messages!.length).toBe(1);
-    expect(data.messages![0].attributes?.lang).toBe('fr');
-    expect(data.messages![0].attributes?.dnt).toBe(true);
-    expect(data.messages![0].notes).toBeUndefined();
+    expect(data.messages![0]?.attributes?.lang).toBe('fr');
+    expect(data.messages![0]?.attributes?.dnt).toBe(true);
+    expect(data.messages![0]?.notes).toBeUndefined();
   });
 
   test('MsgResource: "getData" method with empty notes', () => {
@@ -1323,11 +1323,11 @@ describe('MsgResource tests', () => {
 
     expect(data.messages).toBeDefined();
     expect(data.messages!.length).toBe(1);
-    expect(data.messages![0].key).toBe('test-1');
-    expect(data.messages![0].value).toBe('This is test 1');
-    expect(data.messages![0].attributes).toBeDefined();
-    expect(data.messages![0].attributes!.lang).toBe('fr');
-    expect(data.messages![0].attributes!.dnt).toBe(true);
+    expect(data.messages![0]?.key).toBe('test-1');
+    expect(data.messages![0]?.value).toBe('This is test 1');
+    expect(data.messages![0]?.attributes).toBeDefined();
+    expect(data.messages![0]?.attributes!.lang).toBe('fr');
+    expect(data.messages![0]?.attributes!.dnt).toBe(true);
   });
 
   test('MsgResource: create with messages that have attributes', () => {

@@ -64,7 +64,7 @@ Notes:
 | Watch tests        | `npm run test:watch`  |
 | Coverage report    | `npm run coverage`    |
 | Build              | `npm run build`       |
-| Type-check only    | `npx tsc --noEmit`    |
+| Type-check + tests | `npx tsc --noEmit`    |
 | API docs           | `npm run docs`        |
 
 `npm run docs` runs `typedoc src/index.ts` (a dev dependency) and writes the
