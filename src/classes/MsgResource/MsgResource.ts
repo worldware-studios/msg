@@ -6,8 +6,10 @@ import { pseudoLocalize } from "../../lib/pseudo-localize.js";
 
 /**
  * Plain data used to create or describe a {@link MsgResource}.
+ *
+ * @typeParam K - Union of message keys. Defaults to `string`.
  */
-export type MsgResourceData = {
+export type MsgResourceData<K extends string = string> = {
   /** Title that identifies this resource within a project. */
   title: string
   /** Locale and formatting metadata for the resource. */
@@ -15,16 +17,45 @@ export type MsgResourceData = {
   /** Optional notes for translators and tooling. */
   notes?: MsgNote[]
   /** Optional list of messages in this resource. */
-  messages?: MsgMessageData[]
+  messages?: MsgMessageData<K>[]
 }
+
+/**
+ * The tree shape of an untyped resource (`MsgResource<string>`): every node is
+ * either a message or another branch.
+ */
+export type MsgTreeNode = { readonly [segment: string]: MsgMessage | MsgTreeNode };
+
+/** First dot-separated segment of a key: `'home.cta.label'` → `'home'`. */
+type MsgKeyHead<K extends string> = K extends `${infer H}.${string}` ? H : K;
+
+/** Remainder of a key after the segment `H`: `('home.cta.label', 'home')` → `'cta.label'`. */
+type MsgKeyRest<K extends string, H extends string> = K extends `${H}.${infer R}` ? R : never;
+
+/**
+ * Nested view of a resource's dot-separated message keys.
+ *
+ * For keys `'home.title' | 'home.cta.label' | 'footer'` this is
+ * `{ home: { title: MsgMessage; cta: { label: MsgMessage } }; footer: MsgMessage }`.
+ * When `K` is `string`, it is {@link MsgTreeNode}, so typed trees stay
+ * assignable to untyped ones.
+ *
+ * @typeParam K - Union of message keys.
+ */
+export type MsgTree<K extends string> = string extends K
+  ? MsgTreeNode
+  : { readonly [H in MsgKeyHead<K>]: H extends K ? MsgMessage : MsgTree<MsgKeyRest<K, H>> };
 
 /**
  * A named collection of messages belonging to a {@link MsgProject}.
  *
  * Resources inherit format defaults from their project, support translation
  * loading (including pseudo-localization), and can serialize to plain data.
+ *
+ * @typeParam K - Union of message keys. Inferred by {@link MsgResource.create}
+ *   from literal message data; defaults to `string`.
  */
-export class MsgResource extends Map<string, MsgMessage> implements MsgInterface {
+export class MsgResource<K extends string = string> extends Map<K, MsgMessage> implements MsgInterface {
 
   private _attributes: MsgAttributes = {};
   private _notes: MsgNote[] = [];
@@ -37,10 +68,20 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
    *
    * When `messages` is provided, each entry is added to the resource.
    * When omitted, the resource starts empty.
+   *
+   * Message keys are inferred from literal data (inline or `as const`), so
+   * `get()` and `toTree()` only accept keys the resource defines. `messages`
+   * may be a readonly array so `as const` definitions are accepted.
+   *
+   * @throws {TypeError} When one key is a dot-separated prefix of another
+   *   (for example `a` and `a.b`).
    */
-  static create(data: MsgResourceData, project: MsgProject ) {
+  static create<K extends string>(
+    data: Omit<MsgResourceData<K>, 'messages'> & { messages?: readonly MsgMessageData<K>[] },
+    project: MsgProject
+  ): MsgResource<K> {
     const { title, attributes, notes, messages}  = data;
-    const res = new MsgResource(title, attributes, project, notes);
+    const res = new MsgResource<K>(title, attributes, project, notes);
 
     if (messages) {
       messages.forEach(messageData => {
@@ -164,27 +205,64 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
       attributes: merged,
       notes
     });
-    this.set(key, msg);
+    // `add()` deliberately accepts any string so untyped, chained `add()` calls
+    // keep compiling; the key type only narrows through `create()`.
+    this.set(key as K, msg);
     return this;
+  }
+
+  /**
+   * Stores a message under `key`.
+   *
+   * @throws {TypeError} When `key` and an existing key are dot-separated
+   *   prefixes of one another (for example `a` and `a.b`), since a tree node
+   *   cannot be both a message and a branch.
+   */
+  public override set(key: K, value: MsgMessage): this {
+    return super.set(key, value);
+  }
+
+  /** Removes the message stored under `key`. */
+  public override delete(key: K): boolean {
+    return super.delete(key);
+  }
+
+  /** Removes every message from this resource. */
+  public override clear(): void {
+    super.clear();
+  }
+
+  /**
+   * Returns a nested, read-only view of this resource's messages, splitting
+   * keys on `.`: `resource.toTree().home.cta.label` is the message stored
+   * under `'home.cta.label'`.
+   *
+   * The key type comes from `this` rather than the class parameter so that a
+   * typed resource stays assignable to a plain `MsgResource`.
+   */
+  public toTree<T extends string>(this: MsgResource<T>): MsgTree<T> {
+    throw new Error('Not implemented');
   }
 
   /**
    * Builds a translated copy of this resource from translation data.
    *
    * Messages present in the translation replace the source; missing keys keep
-   * the source message. Notes are carried over from the source. Unspecified
-   * message `lang`, `dir`, and `dnt` inherit from the translated resource.
+   * the source message. Keys that are not in this resource are ignored, so the
+   * translated resource has the same keys (and key type) as the source. Notes
+   * are carried over from the source. Unspecified message `lang`, `dir`, and
+   * `dnt` inherit from the translated resource.
    *
    * @throws {TypeError} When the translation title does not match this resource.
    */
-  public translate(data: MsgResourceData) {
+  public translate(data: MsgResourceData): MsgResource<K> {
     const {title, attributes, messages} = data;
 
     if (title !== this.title) {
       throw new TypeError('Title of resource and translations do not match.');
     }
 
-    const translated = MsgResource.create({
+    const translated = MsgResource.create<K>({
       title,
       // preserve the source resource's format unless the translation overrides it
       attributes: this.preserveFormat(attributes, this.attributes.format),
@@ -192,13 +270,13 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     }, this._project);
 
     // use messages from the resource as defaults
-    this.forEach(msg => {
-      translated.set(msg.key, msg);
+    this.forEach((msg, key) => {
+      translated.set(key, msg);
     })
 
     messages?.forEach(messageData => {
       const {key, value, attributes} = messageData;
-      const source = this.get(key);
+      const source = this.get(key as K);
       // Inherit lang/dir/dnt from the translated resource (same merge as add()),
       // while still preserving the source message's format when the translation
       // does not set one.
@@ -243,7 +321,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
    *
    * @throws {Error} When the locale is unsupported or its language chain is empty.
    */
-  public async getTranslation(lang?: string) {
+  public async getTranslation(lang?: string): Promise<MsgResource<K>> {
 
     // if no lang is passed, clone current instance
     if (!lang) {
@@ -253,8 +331,8 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
     const project = this._project;
     const pseudoLocale = project.locales.pseudoLocale;
     if (lang === pseudoLocale) {
-      const messages = [...this.values()].map((msg) => ({
-        key: msg.key,
+      const messages = [...this.entries()].map(([key, msg]) => ({
+        key,
         value: pseudoLocalize(msg.value, this.resolveFormat(msg.attributes)),
         attributes: { ...msg.attributes, lang: pseudoLocale }
       }));
@@ -277,7 +355,7 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
       throw new Error(`Empty language chain for locale: ${lang}`)
     }
 
-    let translated: MsgResource = this;
+    let translated: MsgResource<K> = this;
 
     for (let i = 0; i < languageChain.length; i++) {
       const lang = languageChain[i];
@@ -298,23 +376,23 @@ export class MsgResource extends Map<string, MsgMessage> implements MsgInterface
    *
    * @param stripNotes - When true, notes are omitted from the result.
    */
-  public getData(stripNotes: boolean = false): MsgResourceData {
+  public getData(stripNotes: boolean = false): MsgResourceData<K> {
 
     const resourceFormat = this.resolveFormat(this.attributes);
     const projectFormat = this._project.format;
 
-    const messages: MsgMessageData[] = [];
-    this.forEach(msg => {
+    const messages: MsgMessageData<K>[] = [];
+    this.forEach((msg, key) => {
       if (this.hasMatchingAttributes(msg)) {
         // remove attributes from message data if they match the resource attributes
-        const data: MsgMessageData = {
-          key: msg.key,
+        const data: MsgMessageData<K> = {
+          key,
           value: msg.value,
           notes: !stripNotes && msg.notes.length > 0 ? msg.notes : undefined
         };
         messages.push(data);
       } else {
-        const data = msg.getData(stripNotes);
+        const data = { ...msg.getData(stripNotes), key };
         // omit the message's format when it matches the resource's format
         if (data.attributes && this.resolveFormat(data.attributes) === resourceFormat) {
           const { format, ...rest } = data.attributes;
