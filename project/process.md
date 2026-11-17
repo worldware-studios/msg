@@ -52,9 +52,15 @@ ambiguous choices for a separate confirmation.
    lightweight track this may be skipped if the approach is obvious.
 2. Analyze and rank approaches by simplicity and time/space complexity.
 3. Evaluate each approach against the rules in `project/rules.md`.
-4. Select the highest-ranked approach that adheres to the rules.
-5. Surface the selected approach to the user and explain why it is best.
-6. Incorporate user feedback into the approach. **[approval]**
+4. Check compatibility with existing usage: confirm that the examples in
+   `README.md` and `GETTING_STARTED.md`, and any known downstream usage (for
+   example msg-cli and msg-react), still compile and behave under each
+   candidate approach. Prototype against them when the API or types change;
+   reading them is not enough.
+5. Select the highest-ranked approach that adheres to the rules.
+6. Surface the selected approach to the user and explain why it is best,
+   including any compatibility impact found in step 4.
+7. Incorporate user feedback into the approach. **[approval]**
 
 ### 3. Scaffold code and write failing unit tests.
 1. If needed, create new class file(s) under `src/classes/<Name>/`.
@@ -81,14 +87,17 @@ ambiguous choices for a separate confirmation.
 
 ### 5. Review and optimize the codebase.
 1. Review the code and identify any issues or improvements.
-2. Explain potential issues and improvements to the user.
-3. When the user has already approved entering this phase, apply clear/default
+2. Exercise runtime and type-level behavior at realistic scale (for example,
+   resources with thousands of messages), not only with small fixtures. Keep a
+   regression test for any limit or failure found.
+3. Explain potential issues and improvements to the user.
+4. When the user has already approved entering this phase, apply clear/default
    optimizations in the same turn and report what changed; ask before anything
    contested or scope-expanding. Otherwise wait for feedback first.
-4. Implement remaining agreed changes.
-5. Make sure all unit tests still pass; adjust code and tests as needed.
-6. Review the code with the user and incorporate suggestions.
-7. Commit the changes prefixed with `optimize:` and push. **[approval]**
+5. Implement remaining agreed changes.
+6. Make sure all unit tests still pass; adjust code and tests as needed.
+7. Review the code with the user and incorporate suggestions.
+8. Commit the changes prefixed with `optimize:` and push. **[approval]**
 
 ### 6. Validate with integration and e2e tests, if appropriate.
 1. Write any necessary integration tests.
@@ -128,16 +137,33 @@ ambiguous choices for a separate confirmation.
    pull request** from the feature work, per `project/rules.md`.
 
 ### 10. Create the pull request.
-1. Mark the draft pull request ready for review against the parent/default
+1. Confirm the issue and the PR description match what ships. Update either
+   one if the design changed during the work, and note what changed.
+2. Mark the draft pull request ready for review against the parent/default
    branch. Follow the pull request rules in `project/rules.md`.
-2. Ensure the PR title follows Conventional Commits — it becomes the squashed
+3. Ensure the PR title follows Conventional Commits — it becomes the squashed
    commit message when the PR is merged.
-3. Ensure CI is green, then request review.
-4. Notify the user with a link to the pull request on GitHub.
-5. Respond to CI failures and reviewer comments by pushing follow-up commits
+4. Ensure CI is green, then request review.
+5. Notify the user with a link to the pull request on GitHub.
+6. Respond to CI failures and reviewer comments by pushing follow-up commits
    until the PR is approved and merge-ready.
-6. Notify the user that the process is complete and ask if they need anything
+7. Notify the user that the process is complete and ask if they need anything
    else related to this issue.
+
+### Design changes in later phases
+
+If a later phase shows that the approved design must change (for example, a
+docs or review phase uncovers a compatibility problem), do not fold the change
+into that phase's work:
+
+1. Stop and surface the problem to the user with options, as in Handling
+   failures.
+2. After approval, write or update tests first, then change the code. Commit
+   with the prefix for the kind of work (`implement:` for behavior or API
+   changes, `refactor:` for structure-only changes), not the current phase's
+   prefix.
+3. Update the GitHub issue and the PR description to match the new design
+   before continuing the phase.
 
 ### Handling failures
 
