@@ -758,6 +758,10 @@ describe('MsgResource tests', () => {
         {
           key: 'test-2',
           value: 'This is test 2'
+        },
+        {
+          key: 'test-3',
+          value: 'This is test 3'
         }
       ]
     }, project);
@@ -767,7 +771,7 @@ describe('MsgResource tests', () => {
 
     expect(translated.title).toBe('TestResource');
     expect(translated.attributes.lang).toBe('zh');
-    expect(translated.size).toBe(3); // zh-Hant has test-3 as well
+    expect(translated.size).toBe(3); // test-3 is translated only in zh-Hant
     expect(translated.get('test-1')?.value).toBe('這是測試 1');
     expect(translated.get('test-2')?.value).toBe('這是測試 2');
     expect(translated.get('test-3')?.value).toBe('這是測試 3');
@@ -789,6 +793,14 @@ describe('MsgResource tests', () => {
         {
           key: 'test-2',
           value: 'This is test 2'
+        },
+        {
+          key: 'test-3',
+          value: 'This is test 3'
+        },
+        {
+          key: 'test-4',
+          value: 'This is test 4'
         }
       ]
     }, project);
@@ -798,7 +810,7 @@ describe('MsgResource tests', () => {
 
     expect(translated.title).toBe('TestResource');
     expect(translated.attributes.lang).toBe('zh');
-    expect(translated.size).toBe(4); // zh-HK has test-4 as well
+    expect(translated.size).toBe(4); // test-4 is translated only in zh-HK
     expect(translated.get('test-1')?.value).toBe('這是測試 1');
     expect(translated.get('test-2')?.value).toBe('這是測試 2');
     expect(translated.get('test-3')?.value).toBe('這是測試 3');
@@ -1078,6 +1090,18 @@ describe('MsgResource tests', () => {
         {
           key: 'test-1',
           value: 'This is test 1'
+        },
+        {
+          key: 'test-2',
+          value: 'This is test 2'
+        },
+        {
+          key: 'test-3',
+          value: 'This is test 3'
+        },
+        {
+          key: 'test-4',
+          value: 'This is test 4'
         }
       ]
     }, project);
@@ -1090,7 +1114,7 @@ describe('MsgResource tests', () => {
 
     expect(translated.title).toBe('TestResource');
     expect(translated.attributes.lang).toBe('zh');
-    expect(translated.size).toBe(4); // zh-HK has test-4 as well
+    expect(translated.size).toBe(4); // test-4 is translated only in zh-HK
     expect(translated.get('test-1')?.value).toBe('這是測試 1');
     expect(translated.get('test-4')?.value).toBe('這是測試 4');
   });

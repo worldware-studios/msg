@@ -1,0 +1,29 @@
+{
+  "title": "Home",
+  "attributes": {
+    "lang": "zh",
+    "dir": "ltr"
+  },
+  "messages": [
+    {
+      "key": "home.title",
+      "value": "欢迎"
+    },
+    {
+      "key": "home.cta.label",
+      "value": "你好，{$name}"
+    },
+    {
+      "key": "home.files",
+      "value": "{count, plural, other {# 个文件}}"
+    },
+    {
+      "key": "home.stale",
+      "value": "已删除的消息"
+    },
+    {
+      "key": "footer",
+      "value": "页脚"
+    }
+  ]
+}
