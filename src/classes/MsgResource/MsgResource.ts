@@ -47,6 +47,12 @@ export type MsgTree<K extends string> = string extends K
   : { readonly [H in MsgKeyHead<K>]: H extends K ? MsgMessage : MsgTree<MsgKeyRest<K, H>> };
 
 /**
+ * Key union of the messages inferred by {@link MsgResource.create}. An empty
+ * message list yields `string` so the resource stays usable.
+ */
+type MsgMessageKeys<M extends readonly MsgMessageData[]> = M extends readonly [] ? string : M[number]['key'];
+
+/**
  * Every proper dot-separated prefix of a key, i.e. its branches in the tree:
  * `'a.b.c'` → `['a', 'a.b']`.
  */
@@ -92,15 +98,23 @@ export class MsgResource<K extends string = string> extends Map<K, MsgMessage> i
    * `get()` and `toTree()` only accept keys the resource defines. `messages`
    * may be a readonly array so `as const` definitions are accepted.
    *
+   * `messages` is inferred as a tuple rather than an array: an array literal
+   * of objects with distinct literal keys makes TypeScript compare every pair
+   * of elements, which fails (TS2590) above roughly 1,000 messages. A tuple
+   * avoids that and works up to TypeScript's ~10,000-element tuple limit.
+   *
+   * @typeParam K - Key type used while inferring `M`; it keeps each message's
+   *   `key` a literal type.
+   * @typeParam M - The inferred message list.
    * @throws {TypeError} When one key is a dot-separated prefix of another
    *   (for example `a` and `a.b`).
    */
-  static create<K extends string>(
-    data: Omit<MsgResourceData<K>, 'messages'> & { messages?: readonly MsgMessageData<K>[] },
+  static create<K extends string, M extends readonly MsgMessageData<K>[] = MsgMessageData<K>[]>(
+    data: Omit<MsgResourceData, 'messages'> & { messages?: readonly [...M] },
     project: MsgProject
-  ): MsgResource<K> {
+  ): MsgResource<MsgMessageKeys<M>> {
     const { title, attributes, notes, messages}  = data;
-    const res = new MsgResource<K>(title, attributes, project, notes);
+    const res = new MsgResource<MsgMessageKeys<M>>(title, attributes, project, notes);
 
     if (messages) {
       messages.forEach(messageData => {
