@@ -16,7 +16,10 @@ process in `project/process.md`. Keep it accurate — the process depends on it.
 
 Check these before starting the process; every GitHub step depends on them.
 
-- **Node.js:** the version in `.nvmrc` (`nvm use`).
+- **Node.js:** the version in `.nvmrc` (`nvm use`). nvm loads only in
+  interactive shells, so an agent's shell may not have `node`, `npm` or `npx`
+  on its `PATH`. If so, load nvm before each command:
+  `. "$NVM_DIR/nvm.sh" && nvm use` (`NVM_DIR` defaults to `~/.nvm`).
 - **GitHub CLI:** `gh` installed and logged in (`gh auth login`) as an account
   that can create issues and push to the repository. Verify with
   `gh auth status`.
@@ -70,6 +73,38 @@ Notes:
 `npm run docs` runs `typedoc src/index.ts` (a dev dependency) and writes the
 generated site to the git-ignored `docs/` folder; regenerate it on demand
 rather than committing it.
+
+## Checking downstream compatibility
+
+Process step 2.4 asks you to prototype against downstream repos (msg-cli,
+msg-react). To type-check one against your local build without touching its
+files or `node_modules`:
+
+1. Run `npm run build` here so `dist/` matches your change.
+2. In a scratch directory outside both repos, write a `tsconfig.json` that
+   extends the downstream repo's config (for msg-react, its
+   `tsconfig.typetest.json`, so type tests are included) and maps the package
+   to your build:
+
+   ```jsonc
+   {
+     "extends": "<downstream>/tsconfig.typetest.json",
+     "compilerOptions": {
+       "rootDir": "/",
+       "paths": { "@worldware/msg": ["<this repo>/dist/index.d.ts"] }
+     },
+     "include": ["<downstream>/src/**/*", "./probe.ts"],
+     "exclude": ["<downstream>/dist", "<downstream>/node_modules"]
+   }
+   ```
+
+   `rootDir` must contain every included file, so widen it when the scratch
+   directory is outside the downstream repo. A `probe.ts` that calls the new
+   or changed API (with `// @ts-expect-error` for calls that should fail) is
+   optional.
+3. From the downstream repo, run `npx tsc -p <scratch>/tsconfig.json --noEmit`.
+   Add `--listFiles` once to confirm `@worldware/msg` resolves to your `dist/`
+   and not to the installed version.
 
 ## Continuous integration
 
