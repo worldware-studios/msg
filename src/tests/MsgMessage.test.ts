@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { MsgMessage } from '../classes/MsgMessage/MsgMessage.js';
 import { DEFAULT_ATTRIBUTES, MsgNote } from '../classes/MsgInterface/MsgInterface.js';
 
@@ -421,4 +421,82 @@ describe('MsgMessage tests', () => {
     expect(msg.attributes.dnt).toBe(true);  // Overridden value
     expect(msg.notes.length).toBe(1);
   })
+});
+
+describe('MsgMessage aliases', () => {
+
+  const mf2 = () => MsgMessage.create({
+    key: 'greeting',
+    value: 'Hello, {$name}!',
+    attributes: { lang: 'en', format: 'MF2' }
+  });
+
+  const mf1 = () => MsgMessage.create({
+    key: 'files',
+    value: '{count, plural, one {# file} other {# files}}',
+    attributes: { lang: 'en', format: 'MF1' }
+  });
+
+  const none = () => MsgMessage.create({
+    key: 'token',
+    value: 'build:{sha}',
+    attributes: { lang: 'en', format: 'NONE' }
+  });
+
+  test('f() matches format() for MF2 messages', () => {
+    const msg = mf2();
+    expect(msg.f({ name: 'Ada' })).toBe(msg.format({ name: 'Ada' }));
+    expect(msg.f({ name: 'Ada' })).toContain('Ada');
+  });
+
+  test('f() matches format() for MF1 messages', () => {
+    const msg = mf1();
+    expect(msg.f({ count: 1 })).toBe(msg.format({ count: 1 }));
+    expect(msg.f({ count: 3 })).toBe('3 files');
+  });
+
+  test('f() matches format() for NONE messages', () => {
+    const msg = none();
+    expect(msg.f({ sha: 'abc' })).toBe(msg.format({ sha: 'abc' }));
+    expect(msg.f({ sha: 'abc' })).toBe('build:{sha}');
+  });
+
+  test('f() matches format() when options are passed', () => {
+    const options = { bidiIsolation: 'none' } as const;
+    // Separate instances: the formatter is cached on first use, so options
+    // only take effect on a message's first format call.
+    expect(mf2().f({ name: 'Ada' }, options)).toBe(mf2().format({ name: 'Ada' }, options));
+    expect(mf2().f({ name: 'Ada' }, options)).toBe('Hello, Ada!');
+  });
+
+  test('f() delegates to format() with the same arguments', () => {
+    const msg = mf2();
+    const spy = vi.spyOn(msg, 'format');
+    const data = { name: 'Ada' };
+    const options = { bidiIsolation: 'none' } as const;
+
+    const result = msg.f(data, options);
+
+    expect(spy).toHaveBeenCalledOnce();
+    expect(spy).toHaveBeenCalledWith(data, options);
+    expect(result).toBe(spy.mock.results[0]?.value);
+  });
+
+  test('s() matches toString()', () => {
+    for (const msg of [mf2(), mf1(), none()]) {
+      expect(msg.s()).toBe(msg.toString());
+      expect(msg.s()).toBe(msg.value);
+    }
+  });
+
+  test('s() delegates to toString()', () => {
+    const msg = mf2();
+    const spy = vi.spyOn(msg, 'toString');
+
+    const result = msg.s();
+
+    expect(spy).toHaveBeenCalledOnce();
+    expect(spy).toHaveBeenCalledWith();
+    expect(result).toBe(spy.mock.results[0]?.value);
+  });
 });
