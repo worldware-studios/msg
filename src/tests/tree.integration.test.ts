@@ -88,6 +88,30 @@ describe('tree integration: typed resource through translation', () => {
     expect(zhHK.notes).toEqual([{ type: 'DESCRIPTION', content: 'Home page strings.' }]);
   });
 
+  test('f() and s() aliases work on source, translated, fallback and pseudo trees', async () => {
+    const source = createHome();
+    const zh = await source.getTranslation('zh');
+    const resources = [
+      source,
+      zh,
+      await source.getTranslation('zh-HK'),
+      await source.getTranslation('en-XA')
+    ];
+
+    for (const resource of resources) {
+      const tree = resource.toTree();
+      expect(tree.home.cta.label.f({ name: 'Ada' }, plain)).toBe(tree.home.cta.label.format({ name: 'Ada' }, plain));
+      expect(tree.home.files.f({ count: 3 })).toBe(tree.home.files.format({ count: 3 }));
+      expect(tree.home.title.s()).toBe(tree.home.title.toString());
+      expect(tree.footer.s()).toBe(tree.footer.value);
+    }
+
+    const zhTree = zh.toTree();
+    expect(zhTree.home.cta.label.f({ name: 'Ada' }, plain)).toBe('你好，Ada');
+    expect(zhTree.home.files.f({ count: 3 })).toBe('3 个文件');
+    expect(zhTree.footer.s()).toBe('页脚');
+  });
+
   test('pseudo-localization keeps the tree shape and placeholders', async () => {
     const pseudo = await createHome().getTranslation('en-XA');
     const tree = pseudo.toTree();
