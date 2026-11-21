@@ -130,6 +130,13 @@ export class MsgMessage implements MsgInterface {
   }
 
   /**
+   * Short alias for {@link MsgMessage.format}.
+   */
+  public f(data: Record<string, any>, options?: MessageFormatOptions): string {
+    throw new Error('Not implemented');
+  }
+
+  /**
    * Formats the message into structured parts with the given placeholder data.
    *
    * For `NONE` format messages, returns a single text part with the raw value.
@@ -161,6 +168,13 @@ export class MsgMessage implements MsgInterface {
    */
   public toString() {
     return this.value;
+  }
+
+  /**
+   * Short alias for {@link MsgMessage.toString}.
+   */
+  public s(): string {
+    throw new Error('Not implemented');
   }
 
   /**
