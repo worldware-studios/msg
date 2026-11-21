@@ -62,7 +62,11 @@ resource.add('itemCount', 'You have {$count} items');
 
 ```typescript
 resource.get('greeting')?.format({ name: 'Alice' }); // "Hello, Alice!"
+resource.get('greeting')?.f({ name: 'Alice' });      // same, shorter
 ```
+
+`f()` is an alias for `format()`, and `s()` is an alias for `toString()`,
+which returns the raw message value.
 
 ## 5. Type your keys (optional)
 

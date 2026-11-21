@@ -151,7 +151,7 @@ export async function getMessages() {
 
 ```javascript
 // Messages inherit MF1 from the Main project scaffold above
-resource.get('sampleKey')?.format();
+resource.get('sampleKey')?.format({});
 // Result: "Sample value."
 
 resource.get('sampleKey2')?.format({ name: 'Alice' });
@@ -160,6 +160,10 @@ resource.get('sampleKey2')?.format({ name: 'Alice' });
 // Prefer getMessages() when you want the runtime locale (via setLang/getLang)
 const messages = await getMessages();
 messages.get('sampleKey2')?.format({ name: 'Alice' });
+
+// Short aliases: f() is format() and s() is toString()
+resource.get('sampleKey2')?.f({ name: 'Alice' }); // "Hi, Alice"
+resource.get('sampleKey')?.s();                   // "Sample value."
 ```
 
 ### Typed message keys and the message tree
@@ -365,7 +369,10 @@ const data = resource.getData();
 
 **Methods:**
 - `format(data: Record<string, any>, options?: MessageFormatOptions): string` - Format the message according to its resolved `format`: `MF2` uses MessageFormat 2, `MF1` compiles via `@messageformat/icu-messageformat-1`, and `NONE` returns the raw value
+- `f(data: Record<string, any>, options?: MessageFormatOptions): string` - Alias for `format()`
 - `formatToParts(data: Record<string, any>, options?: MessageFormatOptions): MessagePart[]` - Format to parts (for `NONE`, a single `{ type: 'text', value }` part)
+- `toString(): string` - Return the raw message value
+- `s(): string` - Alias for `toString()`
 - `addNote(type: NoteTypes, content: string): MsgMessage` - Add a note (returns `this` for chaining)
 - `getData(stripNotes?: boolean): MsgMessageData` - Get message data
 - `toJSON(stripNotes?: boolean): string` - Serialize to JSON
