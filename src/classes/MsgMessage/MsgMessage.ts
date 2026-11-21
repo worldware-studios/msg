@@ -133,7 +133,7 @@ export class MsgMessage implements MsgInterface {
    * Short alias for {@link MsgMessage.format}.
    */
   public f(data: Record<string, any>, options?: MessageFormatOptions): string {
-    throw new Error('Not implemented');
+    return this.format(data, options);
   }
 
   /**
@@ -174,7 +174,7 @@ export class MsgMessage implements MsgInterface {
    * Short alias for {@link MsgMessage.toString}.
    */
   public s(): string {
-    throw new Error('Not implemented');
+    return this.toString();
   }
 
   /**
