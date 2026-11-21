@@ -130,7 +130,16 @@ export class MsgMessage implements MsgInterface {
   }
 
   /**
-   * Short alias for {@link MsgMessage.format}.
+   * Short alias for {@link MsgMessage.format}; takes the same arguments and
+   * returns the same result.
+   *
+   * ```ts
+   * tree.home.cta.label.f({ name: 'Ada' }); // same as .format({ name: 'Ada' })
+   * ```
+   *
+   * @param data - Values for the message's placeholders.
+   * @param options - MessageFormat options, as for {@link MsgMessage.format}.
+   * @returns The formatted message.
    */
   public f(data: Record<string, any>, options?: MessageFormatOptions): string {
     return this.format(data, options);
@@ -171,7 +180,9 @@ export class MsgMessage implements MsgInterface {
   }
 
   /**
-   * Short alias for {@link MsgMessage.toString}.
+   * Short alias for {@link MsgMessage.toString}; returns the raw message value.
+   *
+   * @returns The message value, unformatted.
    */
   public s(): string {
     return this.toString();
