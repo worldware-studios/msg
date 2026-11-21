@@ -56,7 +56,8 @@ ambiguous choices for a separate confirmation.
    `README.md` and `GETTING_STARTED.md`, and any known downstream usage (for
    example msg-cli and msg-react), still compile and behave under each
    candidate approach. Prototype against them when the API or types change;
-   reading them is not enough.
+   reading them is not enough. See "Checking downstream compatibility" in
+   `project/info.md` for how.
 5. Select the highest-ranked approach that adheres to the rules.
 6. Surface the selected approach to the user and explain why it is best,
    including any compatibility impact found in step 4.
